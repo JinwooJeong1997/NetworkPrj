@@ -38,33 +38,37 @@ int main(int argc, char *argv[])
 	//init socks
 	for(int i = 0; i < 2; i++){
 		serv_sock[i]=socket(PF_INET, SOCK_STREAM, 0);
+
 		if(serv_sock[i] == -1 ){
 			printf("%d \n ",i);
 			error_handling("socket() error");
 		}
-	
+		printf("%d socket succeed \n ",i);
 		memset(&serv_addr[i], 0, sizeof(serv_addr[i]));
 		serv_addr[i].sin_family=AF_INET;
 		serv_addr[i].sin_addr.s_addr=htonl(INADDR_ANY);
 		serv_addr[i].sin_port=htons(atoi(argv[1])+i);
-		
+		printf("serv_addr[%d] port : %d",i,atoi(argv[1])+i);
 
 		if(bind(serv_sock[i], (struct sockaddr*) &serv_addr[i], sizeof(serv_addr[i]))==-1 ){
 			printf("%d \n ",i);
 			error_handling("bind() error");
 		} 
+		printf("%d bind() succeed \n ",i);
 
 		if(listen(serv_sock[i], 5)==-1){
 			printf("%d \n ",i);
 			error_handling("listen() error");
 		}
-	
-		clnt_addr_size[i]=sizeof(clnt_addr);  
-		clnt_sock[i]=accept(serv_sock[i], (struct sockaddr*)&clnt_addr,&clnt_addr_size[i]);
+		printf("%d listen() succeed \n ",i);
+
+		clnt_addr_size[i]=sizeof(clnt_addr[i]);  
+		clnt_sock[i]=accept(serv_sock[i], (struct sockaddr*)&clnt_addr[i],&clnt_addr_size[i]);
 		if(clnt_sock[i]==-1){
 			printf("%d \n ",i);
 			error_handling("accept() error");
-		}  
+		}
+		printf("%d accept() succeed \n ",i);
 	}
 	 
 	

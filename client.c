@@ -20,7 +20,7 @@ void sendFile(char* name,int socks);
 void error_handling(char *message);
 int main(int argc, char* argv[]){
 	int serv_sock[2];
-	int clnt_sock[2];
+	//int clnt_sock[2];
     int str_len, len;
 	struct sockaddr_in serv_addr[2];
 	char message[MAX_CMD];
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]){
 		serv_addr[i].sin_family=AF_INET;
 		serv_addr[i].sin_addr.s_addr=inet_addr(argv[1]);
 		serv_addr[i].sin_port=htons(atoi(argv[2])+i);
-    
+		printf("serv_addr[%d] port : %d",i,atoi(argv[2])+i);
 		if(connect(serv_sock[i], (struct sockaddr*)&serv_addr[i], sizeof(serv_addr[i]))==-1) {
 			printf("%d \n ",i);
 			error_handling("connect() error!");
