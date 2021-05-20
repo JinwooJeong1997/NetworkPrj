@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
 		serv_addr[i].sin_port=htons(atoi(argv[2])+i);
     
 		if(connect(serv_sock[i], (struct sockaddr*)&serv_addr[i], sizeof(serv_addr[i]))==-1) {
-			error_handling("connect() error!");
+			error_handling("connect() error! %d",i);
 		}
 	}
 	
