@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 	for(int i = 0; i < 2; i++){
 		serv_sock[i]=socket(PF_INET, SOCK_STREAM, 0);
 		if(serv_sock[i] == -1 ){
-			error_handling("socket() error");
+			error_handling("socket() error %d",i);
 		}
 	
 		memset(&serv_addr[i], 0, sizeof(serv_addr[i]));
@@ -49,17 +49,17 @@ int main(int argc, char *argv[])
 		
 
 		if(bind(serv_sock[i], (struct sockaddr*) &serv_addr[i], sizeof(serv_addr[i]))==-1 ){
-			error_handling("bind() error");
+			error_handling("bind() error %d",i);
 		} 
 
 		if(listen(serv_sock[i], 5)==-1){
-			error_handling("listen() error");
+			error_handling("listen() error %d",i);
 		}
 	
 		clnt_addr_size[i]=sizeof(clnt_addr);  
 		clnt_sock[i]=accept(serv_sock[i], (struct sockaddr*)&clnt_addr,&clnt_addr_size);
 		if(clnt_sock[i]==-1){
-			error_handling("accept() error");
+			error_handling("accept() errord",i);
 		}  
 	}
 	 
