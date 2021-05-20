@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 	while(1){
 		str_len=read(serv_sock[MSG_SOCK], message, sizeof(message)-1);
 		if(strlen==-1){error_handling("read() error!");}
-		if(strncpy(message,"q\n" , sizeof("q\n"))!=0){
+		if(strncmp(message,"q\n" , sizeof("q\n"))!=0){
 			break;
 		}
 		printf("Message from server MSG_SOCK: %s \n", message);
