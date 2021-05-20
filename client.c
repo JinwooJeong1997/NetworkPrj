@@ -56,7 +56,7 @@ int main(int argc, char* argv[]){
 	fgets(cmd,MAX_CMD,stdin);
 	sendFile(cmd,serv_sock[DATA_SOCK]);
 	printf("file send comp!\n");
-	while(!strcmp(message,"q")){
+	while(!strcmp(message,"q\n")){
 		fputs("input msg (q to Quit) : ",stdout);
 		fgets(message,BUFSIZ,stdin);
 		write(serv_sock[DATA_SOCK],message,strlen(message));
