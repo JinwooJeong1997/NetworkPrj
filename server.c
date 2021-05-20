@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 	char buf[256];
 	struct sockaddr_in serv_addr[2];
 	struct sockaddr_in clnt_addr[2];
-	socklen_t clnt_addr_size;
+	socklen_t clnt_addr_size[2];
 
 	char message[]="Hello World!";
 	
