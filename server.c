@@ -85,13 +85,15 @@ int main(int argc, char *argv[])
 	fclose(file);
 	printf("file update complete!\n");
 	while(1){
-		str_len=read(serv_sock[DATA_SOCK], message, sizeof(message)-1);
+		str_len=read(serv_sock[DATA_SOCK], message, BUFSIZ-1);
 		if(strlen==-1){error_handling("read() error!");}
-		if(!strcmp(message,"q")){
+		if(!strcmp(message,"q\n")||!strcmp(message,"Q\n")){
 			break;
 		}
+		write(clnt_sock[DATA_SOCK], message, strlen(message));
+		message[str_len]=0;
 		printf("Message from client MSG_SOCK: %s \n", message);
-		write(clnt_sock[DATA_SOCK], message, sizeof(message));
+
 		
 	}
 	for(int i = 0; i < 2 ; i ++){
