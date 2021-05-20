@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
 			error_handling("bind() error");
 		} 
 
-		if(listen(serv_sock, 5)==-1){
+		if(listen(serv_sock[i], 5)==-1){
 			error_handling("listen() error");
 		}
 	
