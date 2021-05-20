@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	struct sockaddr_in clnt_addr[2];
 	socklen_t clnt_addr_size[2];
 
-	char message[]="Hello World!";
+	strcpy(message,"hello world!");
 	
 	if(argc!=2){
 		printf("Usage : %s <port>\n", argv[0]);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	while(1){
 		str_len=read(serv_sock[DATA_SOCK], message, BUFSIZ-1);
 		if(strlen==-1){error_handling("read() error!");}
-		if(!strcmp(message,"q\n")||!strcmp(message,"Q\n")){
+		if(!strcmp(message,"q\n") || !strcmp(message,"Q\n")){
 			break;
 		}
 		write(clnt_sock[DATA_SOCK], message, strlen(message));
