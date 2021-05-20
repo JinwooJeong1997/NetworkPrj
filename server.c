@@ -42,13 +42,13 @@ int main(int argc, char *argv[])
 			error_handling("socket() error");
 		}
 		printf("%d socket succeed \n ",i);
-		memset(&serv_addr[i], 0, sizeof(serv_addr));
-		serv_addr[i].sin_family=AF_INET;
-		serv_addr[i].sin_addr.s_addr=htonl(INADDR_ANY);
-		serv_addr[i].sin_port=htons(atoi(argv[1]));
+		memset(&serv_addr, 0, sizeof(serv_addr));
+		serv_addr.sin_family=AF_INET;
+		serv_addr.sin_addr.s_addr=htonl(INADDR_ANY);
+		serv_addr.sin_port=htons(atoi(argv[1]));
 		printf("serv_addr[%d] port : %d",i,atoi(argv[1]));
 
-		if(bind(serv_sock[i], (struct sockaddr*) &serv_addr, sizeof(serv_addr))==-1 ){
+		if(bind(serv_sock, (struct sockaddr*) &serv_addr, sizeof(serv_addr))==-1 ){
 			error_handling("bind() error");
 		} 
 		printf("%d bind() succeed \n ",i);
