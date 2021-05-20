@@ -19,7 +19,7 @@
 void sendFile(char* name,int socks);
 void error_handling(char *message);
 int main(int argc, char* argv[]){
-	int serv_sock[2], fd;
+	int serv_sock[2];
 	int clnt_sock[2];
     int str_len, len;
 	struct sockaddr_in serv_addr[2];
