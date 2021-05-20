@@ -19,54 +19,48 @@
 void sendFile(char* name,int socks);
 void error_handling(char *message);
 int main(int argc, char* argv[]){
-	int serv_sock[2];
+	int serv_sock;
 	//int clnt_sock[2];
     int str_len, len;
-	struct sockaddr_in serv_addr[2];
+	struct sockaddr_in serv_addr;
 	char message[MAX_CMD];
 	if(argc!=3){
 		printf("Usage : %s <IP> <PORT> \n", argv[0]);
 		exit(1);
 	}
-	for(int i = 0; i < 1; i ++){
-		serv_sock[i] = socket(PF_INET, SOCK_STREAM, 0);
-    
-		if(serv_sock[i] == -1){
-			printf("%d \n ",i);
-			error_handling("socket() error");
-		}
-		memset(&serv_addr[i], 0, sizeof(serv_addr[i]));
-		serv_addr[i].sin_family=AF_INET;
-		serv_addr[i].sin_addr.s_addr=inet_addr(argv[1]);
-		serv_addr[i].sin_port=htons(atoi(argv[2])+i);
-		printf("serv_addr[%d] port : %d \n",i,atoi(argv[2])+i);
-		if(connect(serv_sock[i], (struct sockaddr*)&serv_addr[i], sizeof(serv_addr[i]))==-1) {
-			printf("%d \n ",i);
-			error_handling("connect() error!");
-		}
+	serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+    if(serv_sock== -1){
+		error_handling("socket() error");
 	}
-	
+	memset(&serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family=AF_INET;
+	serv_addr.sin_addr.s_addr=inet_addr(argv[1]);
+	serv_addr.sin_port=htons(atoi(argv[2]));
+	printf("serv_addr port : %d \n",atoi(argv[2]));
+	if(connect(serv_sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr))==-1) {
+		error_handling("connect() error!");
+	}
 	// test
-	str_len=read(serv_sock[DATA_SOCK], message, BUFSIZ-1);
+	str_len=read(serv_sock, message, BUFSIZ-1);
 
 	if(str_len==-1){error_handling("read() error!");}
 		
 	printf("Message from server MSG_SOCK: %s \n", message);
     char cmd[MAX_CMD];
 	fgets(cmd,MAX_CMD,stdin);
-	sendFile(cmd,serv_sock[DATA_SOCK]);
+	sendFile(cmd,serv_sock);
 	printf("file send comp!\n");
 	while(!strcmp(message,"q\n")){
 		fputs("input msg (q to Quit) : ",stdout);
 		fgets(message,BUFSIZ,stdin);
-		write(serv_sock[DATA_SOCK],message,strlen(message));
-		str_len=read(serv_sock[DATA_SOCK], message, BUFSIZ-1);
+		write(serv_sock,message,strlen(message));
+		str_len=read(serv_sock, message, BUFSIZ-1);
 		if(str_len==-1){error_handling("read() error!");}
 		printf("Message from server MSG_SOCK: %s \n", message);
 	}
 
 	for(int i = 0; i < 1; i++){
-		close(serv_sock[i]);
+		close(serv_sock);
 	}
 	return 0;
 }
@@ -104,6 +98,7 @@ void sendFile(char* name,int socks){
 		send(socks,buf,fpsize,0);
 	}
 	free(fname);
+	write(socks,"END",strlen("END"));
 	fclose(file);
 }
 
