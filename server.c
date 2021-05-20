@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 		}
 	
 		clnt_addr_size[i]=sizeof(clnt_addr);  
-		clnt_sock[i]=accept(serv_sock[i], (struct sockaddr*)&clnt_addr,&clnt_addr_size);
+		clnt_sock[i]=accept(serv_sock[i], (struct sockaddr*)&clnt_addr,&clnt_addr_size[i]);
 		if(clnt_sock[i]==-1){
 			printf("%d \n ",i);
 			error_handling("accept() error");
