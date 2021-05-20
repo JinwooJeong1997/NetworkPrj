@@ -74,22 +74,19 @@ int main(int argc, char *argv[])
 	
 	write(clnt_sock[DATA_SOCK], message, sizeof(message));
 	int nbyte = 256;
-    	size_t filesize = 0, bufsize = 0;
-    	FILE *file = NULL;
-
-    	file = fopen("test.txt", "wb");
-
-    	bufsize = 256;
-
-    	while(nbyte!=0) {
-        	nbyte = recv(clnt_sock[DATA_SOCK], buf, bufsize, 0);
-        	fwrite(buf, sizeof(char), nbyte, file);		
-    	}
+    size_t filesize = 0, bufsize = 0;
+    FILE *file = NULL;
+   	file = fopen("test.txt", "wb");
+   	bufsize = 256;
+   	while(nbyte!=0) {
+       	nbyte = recv(clnt_sock[DATA_SOCK], buf, bufsize, 0);
+       	fwrite(buf, sizeof(char), nbyte, file);		
+   	}
 	fclose(file);
 	while(1){
 		str_len=read(serv_sock[DATA_SOCK], message, sizeof(message)-1);
 		if(strlen==-1){error_handling("read() error!");}
-		if(strncmp(message,"q\n" , sizeof("q\n"))!=0){
+		if(!strcmp(message,"q\n")){
 			break;
 		}
 		printf("Message from server MSG_SOCK: %s \n", message);
