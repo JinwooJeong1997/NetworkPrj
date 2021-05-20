@@ -32,6 +32,7 @@ int main(int argc, char* argv[]){
 		serv_sock[i] = socket(PF_INET, SOCK_STREAM, 0);
     
 		if(serv_sock[i] == -1){
+			printf("%d \n ",i);
 			error_handling("socket() error");
 		}
 		memset(&serv_addr[i], 0, sizeof(serv_addr[i]));
@@ -40,7 +41,8 @@ int main(int argc, char* argv[]){
 		serv_addr[i].sin_port=htons(atoi(argv[2])+i);
     
 		if(connect(serv_sock[i], (struct sockaddr*)&serv_addr[i], sizeof(serv_addr[i]))==-1) {
-			error_handling("connect() error! %d",i);
+			printf("%d \n ",i);
+			error_handling("connect() error!");
 		}
 	}
 	
