@@ -28,7 +28,7 @@ int main(int argc, char* argv[]){
 		printf("Usage : %s <IP> <PORT> \n", argv[0]);
 		exit(1);
 	}
-	for(int i = 0; i < 2; i ++){
+	for(int i = 0; i < 1; i ++){
 		serv_sock[i] = socket(PF_INET, SOCK_STREAM, 0);
     
 		if(serv_sock[i] == -1){
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
 	}
 	
 	// test
-	str_len=read(serv_sock[MSG_SOCK], message, sizeof(message)-1);
+	str_len=read(serv_sock[DATA_SOCK], message, sizeof(message)-1);
 
 	if(str_len==-1){error_handling("read() error!");}
 		
@@ -59,13 +59,13 @@ int main(int argc, char* argv[]){
 	while(strncmp(message,"q\n",sizeof("q\n"))!=0){
 		fputs("input msg (q to Quit) : ",stdout);
 		fgets(message,BUFSIZ,stdin);
-		write(serv_sock[MSG_SOCK],message,BUFSIZ-1);
-		str_len=read(serv_sock[MSG_SOCK], message, sizeof(message)-1);
+		write(serv_sock[DATA_SOCK],message,BUFSIZ-1);
+		str_len=read(serv_sock[DATA_SOCK], message, sizeof(message)-1);
 		if(str_len==-1){error_handling("read() error!");}
 		printf("Message from server MSG_SOCK: %s \n", message);
 	}
 
-	for(int i = 0; i < 2; i++){
+	for(int i = 0; i < 1; i++){
 		close(serv_sock[i]);
 	}
 	return 0;

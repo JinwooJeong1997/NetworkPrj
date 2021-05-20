@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	//init socks
-	for(int i = 0; i < 2; i++){
+	for(int i = 0; i < 1; i++){
 		serv_sock[i]=socket(PF_INET, SOCK_STREAM, 0);
 
 		if(serv_sock[i] == -1 ){
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	}
 	 
 	
-	write(clnt_sock[MSG_SOCK], message, sizeof(message));
+	write(clnt_sock[DATA_SOCK], message, sizeof(message));
 	int nbyte = 256;
     	size_t filesize = 0, bufsize = 0;
     	FILE *file = NULL;
@@ -87,13 +87,13 @@ int main(int argc, char *argv[])
     	}
 	fclose(file);
 	while(1){
-		str_len=read(serv_sock[MSG_SOCK], message, sizeof(message)-1);
+		str_len=read(serv_sock[DATA_SOCK], message, sizeof(message)-1);
 		if(strlen==-1){error_handling("read() error!");}
 		if(strncmp(message,"q\n" , sizeof("q\n"))!=0){
 			break;
 		}
 		printf("Message from server MSG_SOCK: %s \n", message);
-		write(clnt_sock[MSG_SOCK], message, sizeof(message));
+		write(clnt_sock[DATA_SOCK], message, sizeof(message));
 		
 	}
 	for(int i = 0; i < 2 ; i ++){
