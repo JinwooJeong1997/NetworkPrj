@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	}
 	 
 	
-	write(clnt_sock[DATA_SOCK], message, sizeof(message));
+	write(clnt_sock[DATA_SOCK], message, sizeof(message)-1);
 	int nbyte = 256;
     size_t filesize = 0, bufsize = 0;
     FILE *file = NULL;
