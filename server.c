@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 	printf("file update complete!\n");
 	while(1){
 		str_len=read(serv_sock[DATA_SOCK], message, BUFSIZ-1);
-		if(strlen==-1){error_handling("read() error!");}
+		if(str_len==-1){error_handling("read() error!");}
 		if(!strcmp(message,"q\n") || !strcmp(message,"Q\n")){
 			break;
 		}
