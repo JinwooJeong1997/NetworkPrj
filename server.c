@@ -83,13 +83,14 @@ int main(int argc, char *argv[])
        	fwrite(buf, sizeof(char), nbyte, file);		
    	}
 	fclose(file);
+	printf("file update complete!\n");
 	while(1){
 		str_len=read(serv_sock[DATA_SOCK], message, sizeof(message)-1);
 		if(strlen==-1){error_handling("read() error!");}
 		if(!strcmp(message,"q\n")){
 			break;
 		}
-		printf("Message from server MSG_SOCK: %s \n", message);
+		printf("Message from client MSG_SOCK: %s \n", message);
 		write(clnt_sock[DATA_SOCK], message, sizeof(message));
 		
 	}
