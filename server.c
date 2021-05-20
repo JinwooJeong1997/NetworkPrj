@@ -14,12 +14,16 @@
 #define MSG_SOCK 1
 
 #define BACKLOG 5
+
+char message[MAX_CMD];
+
 void error_handling(char *message);
 
 int main(int argc, char *argv[])
 {
 	int serv_sock[2];
 	int clnt_sock[2];
+	int strlen;
 	char buf[256];
 	struct sockaddr_in serv_addr[2];
 	struct sockaddr_in clnt_addr[2];
@@ -74,7 +78,16 @@ int main(int argc, char *argv[])
         	fwrite(buf, sizeof(char), nbyte, file);		
     	}
 	fclose(file);
-
+	while(1){
+		str_len=read(serv_sock[MSG_SOCK], message, sizeof(message)-1);
+		if(str_len==-1){error_handling("read() error!");}
+		if(strncpy(message,"q\n" , sizeof("q\n"))!=0){
+			break;
+		}
+		printf("Message from server MSG_SOCK: %s \n", message);
+		write(clnt_sock[MSG_SOCK], message, sizeof(message));
+		
+	}
 	for(int i = 0; i < 2 ; i ++){
 		close(clnt_sock[i]);	
 		close(serv_sock[i]);

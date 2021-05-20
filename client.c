@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
 	int clnt_sock[2];
     int str_len, len;
 	struct sockaddr_in serv_addr[2];
-	char message[30];
+	char message[MAX_CMD];
 	if(argc!=3){
 		printf("Usage : %s <IP> <PORT> \n", argv[0]);
 		exit(1);
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]){
 	fgets(cmd,MAX_CMD,stdin);
 	sendFile(cmd,serv_sock[2]);
 	printf("file send comp!\n");
-	while(strncpy(message,"q\n",sizeof("q\n"))!=0){
+	while(strncpy(message,"q\n" || sizeof("q\n"))!=0){
 		fputs("input msg (q to Quit) : ",stdout);
 		fgets(message,BUFSIZ,stdin);
 		write(serv_sock[MSG_SOCK],message,BUFSIZ-1);
