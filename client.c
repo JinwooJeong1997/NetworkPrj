@@ -47,7 +47,7 @@ int main(int argc, char* argv[]){
 	}
 	
 	// test
-	str_len=read(serv_sock[DATA_SOCK], message, sizeof(message)-1);
+	str_len=read(serv_sock[DATA_SOCK], message, BUFSIZ-1);
 
 	if(str_len==-1){error_handling("read() error!");}
 		
@@ -59,8 +59,8 @@ int main(int argc, char* argv[]){
 	while(!strcmp(message,"q")){
 		fputs("input msg (q to Quit) : ",stdout);
 		fgets(message,BUFSIZ,stdin);
-		write(serv_sock[DATA_SOCK],message,BUFSIZ-1);
-		str_len=read(serv_sock[DATA_SOCK], message, sizeof(message)-1);
+		write(serv_sock[DATA_SOCK],message,strlen(message));
+		str_len=read(serv_sock[DATA_SOCK], message, BUFSIZ-1);
 		if(str_len==-1){error_handling("read() error!");}
 		printf("Message from server MSG_SOCK: %s \n", message);
 	}
