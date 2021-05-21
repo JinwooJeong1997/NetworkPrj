@@ -62,10 +62,14 @@ int main(int argc, char *argv[])
 		printf("file send comp!\n");
 
 
-	while (!strcmp(message, "q\n"))
+	while (1)
 	{
 		fputs("input msg (q to Quit) : ", stdout);
 		fgets(message, BUFSIZ, stdin);
+		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
+		{
+			break;
+		}
 		write(sock, message, strlen(message));
 		str_len = read(sock, message, BUFSIZ - 1);
 		if (str_len == -1)
@@ -75,10 +79,7 @@ int main(int argc, char *argv[])
 		printf("Message from server MSG_SOCK: %s \n", message);
 	}
 
-	for (int i = 0; i < 2; i++)
-	{
-		close(sock);
-	}
+	close(sock);
 	return 0;
 }
 
@@ -94,8 +95,8 @@ void sendFile(char *name, int socks)
 	file = fopen(fname, "rb");
 	if (file == NULL)
 	{
-		printf("%s \n", fname);
-		fprintf(stderr, "fopenfail!");
+
+		error_handling( "fopenfail!");
 		exit(1);
 	}
 	printf("file open!\n");
@@ -118,7 +119,6 @@ void sendFile(char *name, int socks)
 		send(socks, buf, fpsize, 0);
 	}
 	free(fname);
-	write(socks, "END", strlen("END"));
 	fclose(file);
 }
 
