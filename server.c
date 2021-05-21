@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
 		{
 			error_handling("read() error!");
 		}
+		message[str_len] = 0;
 		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
 		{
 			break;

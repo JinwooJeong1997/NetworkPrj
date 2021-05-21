@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
 		{
 			error_handling("read() error!");
 		}
+		message[str_len] = 0;
 		printf("Message from server MSG_SOCK: %s \n", message);
 	}
 
