@@ -62,6 +62,7 @@ int main(int argc, char *argv[])
 		//printf("file send comp!\n");
 	while (1)
 	{
+		memset(message,0,sizeof(message)*sizeof(char)));
 		fputs("input msg (q to Quit) : ", stdout);
 		fgets(message, BUFSIZ, stdin);
 		write(sock, message, strlen(message));
