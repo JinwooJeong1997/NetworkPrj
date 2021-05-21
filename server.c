@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <pthread.h>
+#include <errno.h>
 
 #define DATA_SOCK 0
 #define MSG_SOCK 1
@@ -53,7 +54,7 @@ int main(int argc, char *argv[])
 		serv_addr[i].sin_family = AF_INET;
 		serv_addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
 		serv_addr[i].sin_port = htons(atoi(argv[1]) + i);
-		printf("serv_addr[%d] port : %d", i, atoi(argv[1]));
+		printf("serv_addr[%d] port : %d \n", i, atoi(argv[1]));
 
 		if (bind(serv_sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
 		{
