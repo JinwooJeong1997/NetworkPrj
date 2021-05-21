@@ -66,11 +66,11 @@ int main(int argc, char *argv[])
 	{
 		fputs("input msg (q to Quit) : ", stdout);
 		fgets(message, BUFSIZ, stdin);
+		write(sock, message, strlen(message));
 		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
 		{
 			break;
 		}
-		write(sock, message, strlen(message));
 		str_len = read(sock, message, BUFSIZ - 1);
 		if (str_len == -1)
 		{
