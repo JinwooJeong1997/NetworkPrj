@@ -242,8 +242,7 @@ int main(int argc, char *argv[])
 		error_handling("accept() error");
 	}
 
-	while (true)
-	{
+	while(true){
 		pthread_t thread;
 		if (pthread_create(&thread, NULL, server_thread,clnt_sock)){
 			printf("(%d) Create thread error\n",clnt_sock);
