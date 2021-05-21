@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 		}
 		printf("Message from client MSG_SOCK: %s \n", message);
 		write(clnt_sock, message, strlen(message));
-		memset(message,0,sizeof(message)*sizeof(char)));
+		memset(message,0,sizeof(message)*sizeof(char));
 	}
 
 	close(clnt_sock);
