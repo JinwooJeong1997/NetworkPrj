@@ -52,40 +52,36 @@ int main(int argc, char *argv[])
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(atoi(argv[1]));
 	printf("serv_addr port : %d \n", ntohs(serv_addr.sin_port));
-
+	//bind
 	if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
 	{
 		error_handling("bind() error");
 	}
+	//listen
 	if (listen(serv_sock, 5) == -1)
 	{
 		error_handling("listen() error");
 	}
-
 	clnt_addr_size = sizeof(clnt_addr);
+
+	//accept
 	clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
 	if (clnt_sock == -1)
 	{
 		error_handling("accept() error");
 	}
 
+	while (true)
+	{
+		pthread_t thread;
+		if (pthread_create(&thread, NULL, server_thread,clnt_sock)){
+			printf("(%d) Create thread error\n",clnt_sock);
+		}
+	}
+
+	/*
 	write(clnt_sock, message, strlen(message) - 1);
 	int nbyte = 256;
-	/*
-	size_t filesize = 0, bufsize = 0;
-	FILE *file = NULL;
-	file = fopen("test.txt", "wb");
-	bufsize = 256;
-
-	while (nbyte != 0)
-	{
-		nbyte = recv(clnt_sock, buf, bufsize, 0);
-		printf("%d byte \n", nbyte);
-		fwrite(buf, sizeof(char), nbyte, file);
-	}
-	fclose(file);
-	printf("file update complete!\n");
-	*/
 	while (1)
 	{
 		str_len = read(clnt_sock, message, BUFSIZ - 1);
@@ -98,14 +94,180 @@ int main(int argc, char *argv[])
 		{
 			break;
 		}
-		printf("Message from client MSG_SOCK: %s \n", message);
+		printf("Message from client MSG_SOCK: %s", message);
+		
 		write(clnt_sock, message, strlen(message));
 		memset(message,0,sizeof(message)*sizeof(char));
 	}
-
+	*/
 	close(clnt_sock);
 	close(serv_sock);
 	return 0;
+}
+void *server_thread(void *sock)
+{
+	int buffer_size = 1024;
+	char *buffer = malloc(sizeof(char) * buffer_size);
+	while (1)
+	{
+		//명령어 입력확인
+		if (recv((int)sock, buffer, buffer_size, 0) < 1)
+		{
+			fprintf(stderr, "%d Terminated", (int)sock);
+			perror("");
+			close((int)sock);
+			break;
+		}
+		server_process((int)sock, buffer);
+	}
+}
+
+int cmdchk(const char *str, const char *pre)
+{
+	size_t lenpre = strlen(pre);
+	size_t lenstr = strlen(str);
+	return (lenstr < lenpre) ? 0 : memcmp(pre, str, lenpre) == 0;
+}
+
+void server_process(int sock, char *command)
+{
+	char *blank = " ";
+	char *cmd = strtok(command, blank);
+	char *context = strtok(NULL, blank);
+	char *response = malloc(sizeof(char) * 1024);
+
+	if (cmdchk(cmd, "pull")){
+		server_pull(sock,context);
+	}
+	else if (cmdchk(cmd, "push")){
+		server_push(sock,context);
+	}
+	else if (cmdchk(cmd, "list")){
+		//show lists
+	}
+	free(response);
+}
+
+void server_pull(int sock, char *target_file)
+{
+	FILE *fd;
+	if ((fd = fopen(target_file, "rb")) == NULL)
+	{
+		perror("");
+		return;
+	}
+
+	char buffer[1024];
+	ssize_t chunk_size;
+
+	fseek(fd, 0L, SEEK_END);
+	sprintf(buffer, "%ld", ftell(fd));
+	ssize_t byte_sent = send(sock, buffer, strlen(buffer) + 1, 0);
+	if (byte_sent == -1)
+	{
+		fprintf(stderr, "(%d) : can't send packet", sock);
+		perror("");
+		fclose(fd);
+		return;
+	}
+	fseek(fd, 0L, SEEK_SET);
+
+	// Wait for client to be ready
+	ssize_t byte_received = recv(sock, buffer, sizeof(buffer), 0);
+	if (byte_received == -1)
+	{
+		fprintf(stderr, "(%d) can't receive packet", sock);
+		perror("");
+		fclose(fd);
+		return;
+	}
+
+	// Start Transmission
+	while ((chunk_size = fread(buffer, 1, sizeof(buffer), fd)) > 0)
+	{
+		ssize_t byte_sent = send(sock, buffer, chunk_size, 0);
+		if (byte_sent == -1)
+		{
+			fprintf(stderr, "(%d) can't send packet", sock);
+			perror("");
+			fclose(fd);
+			return;
+		}
+	}
+	printf("(%d) Transmited: %s\n", sock, target_file);
+	fclose(fd);
+}
+
+void server_push(int sock, char *target_file)
+{
+	// Initialize File Descriptor
+	FILE *fd;
+	if ((fd = fopen(target_file, "wb")) == NULL)
+	{
+		respond(sock, "@file open error");
+		fprintf(stderr, "(%d) Can't open %s", sock, target_file);
+		perror("");
+		return;
+	}
+
+	// Retrieve File Size
+	char buffer[1024];
+	strcpy(buffer, "size?");
+	ssize_t byte_sent = send(recfd, buffer, strlen(buffer) + 1, 0);
+	if (byte_sent == -1)
+	{
+		fprintf(stderr, "(%d) can't send packet", sock);
+		perror("");
+		fclose(fd);
+		return;
+	}
+	ssize_t byte_received = recv(sock, buffer, sizeof(buffer), 0);
+	if (byte_received == -1)
+	{
+		fprintf(stderr, "(%d) can't receive packet", sock);
+		perror("");
+		fclose(fd);
+		return;
+	}
+	long file_size = strtol(buffer, NULL, 0); //strol => coveert string to long int
+
+	// Notify client to start transmission
+	strcpy(buffer, "ready");
+	byte_sent = send(sock, buffer, strlen(buffer) + 1, 0);
+	if (byte_sent == -1)
+	{
+		fprintf(stderr, "(%d) can't send packet", sock);
+		perror("");
+		fclose(fd);
+		return;
+	}
+
+	// Start Receiving
+	ssize_t chunk_size;
+	long received_size = 0;
+	while (received_size < file_size &&
+		   (chunk_size = recv(sock, buffer, sizeof(buffer), 0)) > 0)
+	{
+		if (chunk_size == -1)
+		{
+			fprintf(stderr, "(%d) can't receive packet", sock);
+			perror("");
+			fclose(fd);
+			return;
+		}
+		if (received_size + chunk_size > file_size)
+		{
+			fwrite(buffer, 1, file_size - received_size, fd);
+			received_size += file_size - received_size;
+		}
+		else
+		{
+			fwrite(buffer, 1, chunk_size, fd);
+			received_size += chunk_size;
+		}
+	}
+	fprintf(stderr, "(%d) Saved: %s\n", sock, target_file);
+	fclose(fd);
 }
 
 void error_handling(char *message)
