@@ -54,7 +54,8 @@ int main(int argc, char *argv[])
 		serv_addr[i].sin_family = AF_INET;
 		serv_addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
 		serv_addr[i].sin_port = htons(atoi(argv[1]) + i);
-		printf("serv_addr[%d] port : %d \n", i, nstoh(serv_addr[i].sin_port));
+		printf("serv_addr[%d] port : %d \n", i, ntohs(serv_addr[i].sin_port));
+		
 
 		if (bind(serv_sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
 		{
