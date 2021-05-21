@@ -91,13 +91,13 @@ int main(int argc, char *argv[])
 		}
 		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
 		{
-			close(clnt_sock);
 			break;
 		}
 		write(clnt_sock, message, strlen(message));
 		message[str_len] = 0;
 		printf("Message from client MSG_SOCK: %s \n", message);
 	}
+
 	close(clnt_sock);
 	close(serv_sock);
 	return 0;
