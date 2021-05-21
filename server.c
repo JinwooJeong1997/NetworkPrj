@@ -68,10 +68,8 @@ int main(int argc, char *argv[])
 			error_handling("accept() error");
 		}
 		printf("%d accept() succeed \n ", i);
-
-		write(clnt_sock[MSG_SOCK], message, strlen(message) - 1);
 	}
-
+	write(clnt_sock[MSG_SOCK], message, strlen(message) - 1);
 	int nbyte = 256;
 	size_t filesize = 0, bufsize = 0;
 	FILE *file = NULL;
