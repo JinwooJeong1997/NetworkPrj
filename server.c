@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
 	FILE *file = NULL;
 	file = fopen("test.txt", "wb");
 	bufsize = 256;
+
 	while (nbyte != 0)
 	{
 		nbyte = recv(clnt_sock, buf, bufsize, 0);
@@ -82,6 +83,7 @@ int main(int argc, char *argv[])
 	}
 	fclose(file);
 	printf("file update complete!\n");
+
 	while (1)
 	{
 		str_len = read(clnt_sock, message, BUFSIZ - 1);
@@ -93,9 +95,9 @@ int main(int argc, char *argv[])
 		{
 			break;
 		}
-		write(clnt_sock, message, strlen(message));
-		message[str_len] = 0;
 		printf("Message from client MSG_SOCK: %s \n", message);
+		write(clnt_sock, message, strlen(message));
+		
 	}
 
 	close(clnt_sock);
