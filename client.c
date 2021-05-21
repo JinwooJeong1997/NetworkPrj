@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
 		serv_addr[i].sin_addr.s_addr = inet_addr(argv[1]);
 		serv_addr[i].sin_port = htons(atoi(argv[2])+i);
 		printf("serv_addr port : %d \n", serv_addr[i].sin_port);
+	}
+
+	for(int i = 0; i < 2; i++){
 		if (connect(sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
 		{
 			error_handling("connect() error!");
