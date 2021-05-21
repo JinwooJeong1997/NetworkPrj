@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 		//init socks
 		serv_sock[i] = socket(PF_INET, SOCK_STREAM, 0);
 		if (serv_sock[i] == -1){error_handling("socket() error");}
-		printf("%d socket succeed \n ", i);
+		printf("socket[%d] socket() succeed \n ", i);
 		memset(&serv_addr[i], 0, sizeof(serv_addr[i]));
 		serv_addr[i].sin_family = AF_INET;
 		serv_addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
@@ -52,13 +52,13 @@ int main(int argc, char *argv[])
 		{
 			error_handling("bind() error");
 		}
-		printf("%d bind() succeed \n ", i);
+		printf("socket[%d] bind() succeed \n ", i);
 
 		if (listen(serv_sock[i], 5) == -1)
 		{
 			error_handling("listen() error");
 		}
-		printf("%d listen() succeed \n ", i);
+		printf("socket[%d] listen() succeed \n ", i);
 
 		clnt_addr_size[i] = sizeof(clnt_addr[i]);
 		clnt_sock[i] = accept(serv_sock[i], (struct sockaddr *)&clnt_addr[i], &clnt_addr_size[i]);
@@ -67,8 +67,10 @@ int main(int argc, char *argv[])
 			printf("%d \n ", i);
 			error_handling("accept() error");
 		}
-		printf("%d accept() succeed \n ", i);
+		printf("socket[%d] accept() succeed \n ", i);
 	}
+
+
 	write(clnt_sock[MSG_SOCK], message, strlen(message) - 1);
 	int nbyte = 256;
 	size_t filesize = 0, bufsize = 0;

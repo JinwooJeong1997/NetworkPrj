@@ -19,7 +19,7 @@ void sendFile(char *name, int socks);
 void error_handling(char *message);
 int main(int argc, char *argv[])
 {
-	int serv_sock[2];
+	int sock[2];
 	//int clnt_sock[2];
 	int str_len, len;
 	struct sockaddr_in serv_addr[2];
@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < 2; i++)
 	{
-		serv_sock[i] = socket(PF_INET, SOCK_STREAM, 0);
-		if (serv_sock[i] == -1)
+		sock[i] = socket(PF_INET, SOCK_STREAM, 0);
+		if (sock[i] == -1)
 		{
 			error_handling("socket() error");
 		}
@@ -41,14 +41,14 @@ int main(int argc, char *argv[])
 		serv_addr[i].sin_family = AF_INET;
 		serv_addr[i].sin_addr.s_addr = inet_addr(argv[1]);
 		serv_addr[i].sin_port = htons(atoi(argv[2])+i);
-		printf("serv_addr port : %d \n", atoi(argv[2])+i);
-		if (connect(serv_sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
+		printf("serv_addr port : %d \n", serv_addr[i].sin_port);
+		if (connect(sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
 		{
 			error_handling("connect() error!");
 		}
 	}
 	// test
-		str_len = read(serv_sock[MSG_SOCK], message, BUFSIZ - 1);
+		str_len = read(sock[MSG_SOCK], message, BUFSIZ - 1);
 
 		if (str_len == -1)
 		{
@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 		printf("Message from server MSG_SOCK: %s \n", message);
 		char cmd[MAX_CMD];
 		fgets(cmd, MAX_CMD, stdin);
-		sendFile(cmd, serv_sock[DATA_SOCK]);
+		sendFile(cmd, sock[DATA_SOCK]);
 		printf("file send comp!\n");
 
 
@@ -66,8 +66,8 @@ int main(int argc, char *argv[])
 	{
 		fputs("input msg (q to Quit) : ", stdout);
 		fgets(message, BUFSIZ, stdin);
-		write(serv_sock[MSG_SOCK], message, strlen(message));
-		str_len = read(serv_sock[MSG_SOCK], message, BUFSIZ - 1);
+		write(sock[MSG_SOCK], message, strlen(message));
+		str_len = read(sock[MSG_SOCK], message, BUFSIZ - 1);
 		if (str_len == -1)
 		{
 			error_handling("read() error!");
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < 2; i++)
 	{
-		close(serv_sock[i]);
+		close(sock[i]);
 	}
 	return 0;
 }
