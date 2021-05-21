@@ -74,9 +74,9 @@ int main(int argc, char *argv[])
 		printf("Message from server MSG_SOCK: %s \n", message);
 	}
 
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < 2; i++)
 	{
-		close(serv_sock);
+		close(serv_sock[i]);
 	}
 	return 0;
 }
