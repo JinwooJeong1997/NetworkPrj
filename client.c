@@ -46,7 +46,8 @@ int main(int argc, char *argv[])
 		{
 			error_handling("connect() error!");
 		}
-		// test
+	}
+	// test
 		str_len = read(serv_sock[MSG_SOCK], message, BUFSIZ - 1);
 
 		if (str_len == -1)
@@ -59,7 +60,7 @@ int main(int argc, char *argv[])
 		fgets(cmd, MAX_CMD, stdin);
 		sendFile(cmd, serv_sock[DATA_SOCK]);
 		printf("file send comp!\n");
-	}
+
 
 	while (!strcmp(message, "q\n"))
 	{
