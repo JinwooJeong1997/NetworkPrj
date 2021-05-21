@@ -23,7 +23,6 @@ void error_handling(char *message);
 int main(int argc, char *argv[])
 {
 	int sock;
-	//int clnt_sock[2];
 	int str_len, len;
 	struct sockaddr_in serv_addr;
 	char message[MAX_CMD];
@@ -67,8 +66,8 @@ int main(int argc, char *argv[])
 	{
 		fputs("input msg (q to Quit) : ", stdout);
 		fgets(message, BUFSIZ, stdin);
-		write(sock[MSG_SOCK], message, strlen(message));
-		str_len = read(sock[MSG_SOCK], message, BUFSIZ - 1);
+		write(sock, message, strlen(message));
+		str_len = read(sock, message, BUFSIZ - 1);
 		if (str_len == -1)
 		{
 			error_handling("read() error!");
