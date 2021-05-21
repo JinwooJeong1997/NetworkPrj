@@ -20,68 +20,7 @@ extern int errno;
 
 void sendFile(char *name, int socks);
 void error_handling(char *message);
-int main(int argc, char *argv[])
-{
-	int sock;
-	int str_len, len;
-	struct sockaddr_in serv_addr;
-	char message[MAX_CMD];
-	if (argc != 3)
-	{
-		printf("Usage : %s <IP> <PORT> \n", argv[0]);
-		exit(1);
-	}
 
-	sock = socket(PF_INET, SOCK_STREAM, 0);
-	if (sock == -1)
-	{
-		error_handling("socket() error");
-	}
-	memset(&serv_addr, 0, sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
-	serv_addr.sin_port = htons(atoi(argv[2]));
-	printf("serv_addr port : %d \n", ntohs(serv_addr.sin_port));
-	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
-	{
-		error_handling("connect() error!");
-	}
-	// test
-	str_len = read(sock, message, BUFSIZ - 1);
-
-	if (str_len == -1)
-	{
-		error_handling("read() error!");
-	}
-
-	printf("Message from server : %s \n", message);
-	char cmd[MAX_CMD];
-	//fgets(cmd, MAX_CMD, stdin);
-	//sendFile(cmd, sock);
-	//printf("file send comp!\n");
-	/*while (1)
-	{
-		memset(message, 0, sizeof(message) * sizeof(char));
-		fputs("input msg (q to Quit) : ", stdout);
-		fgets(message, BUFSIZ, stdin);
-		write(sock, message, strlen(message));
-		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
-		{
-			break;
-		}
-		str_len = read(sock, message, BUFSIZ - 1);
-		if (str_len == -1)
-		{
-			error_handling("read() error!");
-		}
-		message[str_len] = 0;
-		printf("Message from server MSG_SOCK: %s \n", message);
-	}*/
-	client_process(sock,buffer);
-
-	close(sock);
-	return 0;
-}
 
 void sendFile(char *name, int socks)
 {
@@ -299,4 +238,67 @@ void error_handling(char *message)
 	//fputs(message, stderr);
 	//fputc('\n', stderr);
 	exit(1);
+}
+
+int main(int argc, char *argv[])
+{
+	int sock;
+	int str_len, len;
+	struct sockaddr_in serv_addr;
+	char message[MAX_CMD];
+	if (argc != 3)
+	{
+		printf("Usage : %s <IP> <PORT> \n", argv[0]);
+		exit(1);
+	}
+
+	sock = socket(PF_INET, SOCK_STREAM, 0);
+	if (sock == -1)
+	{
+		error_handling("socket() error");
+	}
+	memset(&serv_addr, 0, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+	serv_addr.sin_port = htons(atoi(argv[2]));
+	printf("serv_addr port : %d \n", ntohs(serv_addr.sin_port));
+	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
+	{
+		error_handling("connect() error!");
+	}
+	// test
+	str_len = read(sock, message, BUFSIZ - 1);
+
+	if (str_len == -1)
+	{
+		error_handling("read() error!");
+	}
+
+	printf("Message from server : %s \n", message);
+	char cmd[MAX_CMD];
+	//fgets(cmd, MAX_CMD, stdin);
+	//sendFile(cmd, sock);
+	//printf("file send comp!\n");
+	/*while (1)
+	{
+		memset(message, 0, sizeof(message) * sizeof(char));
+		fputs("input msg (q to Quit) : ", stdout);
+		fgets(message, BUFSIZ, stdin);
+		write(sock, message, strlen(message));
+		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
+		{
+			break;
+		}
+		str_len = read(sock, message, BUFSIZ - 1);
+		if (str_len == -1)
+		{
+			error_handling("read() error!");
+		}
+		message[str_len] = 0;
+		printf("Message from server MSG_SOCK: %s \n", message);
+	}*/
+	client_process(sock,buffer);
+
+	close(sock);
+	return 0;
 }
