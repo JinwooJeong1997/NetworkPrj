@@ -71,6 +71,7 @@ int main(int argc, char *argv[])
 
 	write(clnt_sock, message, strlen(message) - 1);
 	int nbyte = 256;
+	/*
 	size_t filesize = 0, bufsize = 0;
 	FILE *file = NULL;
 	file = fopen("test.txt", "wb");
@@ -84,7 +85,7 @@ int main(int argc, char *argv[])
 	}
 	fclose(file);
 	printf("file update complete!\n");
-
+	*/
 	while (1)
 	{
 		str_len = read(clnt_sock, message, BUFSIZ - 1);
