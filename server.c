@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
 		}
 		printf("socket[1] listen() succeed \n ");
 
-		clnt_addr_size[0] = sizeof(clnt_addr[i]);
-		clnt_sock[0] = accept(serv_sock[i], (struct sockaddr *)&clnt_addr[i], &clnt_addr_size[i]);
+		clnt_addr_size[0] = sizeof(clnt_addr[0]);
+		clnt_sock[0] = accept(serv_sock[0], (struct sockaddr *)&clnt_addr[0], &clnt_addr_size[0]);
 		if (clnt_sock[0] == -1)
 		{
 			printf("%d \n ", 0);
@@ -83,16 +83,17 @@ int main(int argc, char *argv[])
 		{
 			error_handling("listen() error");
 		}
-		printf("socket[%d] listen() succeed \n ", i);
+		printf("socket[%d] listen() succeed \n ", 1);
 
-		clnt_addr_size[1] = sizeof(clnt_addr[i]);
-		clnt_sock[1] = accept(serv_sock[i], (struct sockaddr *)&clnt_addr[i], &clnt_addr_size[i]);
+		clnt_addr_size[1] = sizeof(clnt_addr[1]);
+		clnt_sock[1] = accept(serv_sock[1], (struct sockaddr *)&clnt_addr[1], &clnt_addr_size[1]);
 		if (clnt_sock[1] == -1)
 		{
 			printf("%d \n ", 1);
 			error_handling("accept() error");
 		}
-	printf("socket0 accept() succeed \n ");
+	printf("socket1 accept() succeed \n ");
+	
 	/*for (int i = 0; i < 2; i++)
 	{
 		if (listen(serv_sock[i], 5) == -1)
