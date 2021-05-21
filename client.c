@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	for(int i = 0; i < 2; i++){
 		if (connect(sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
 		{
-			perror("%d socket",i);
+			printf("%d socket ",i);
 			error_handling("connect() error!");
 		}
 	}
