@@ -10,16 +10,23 @@
 #include <sys/socket.h>
 #include <pthread.h>
 #include <errno.h>
+#include <signal.h>
 
 #define DATA_SOCK 0
 #define MSG_SOCK 1
 
 #define BACKLOG 5
 #define MAX_CMD 100
-char message[MAX_CMD];
 
-void error_handling(char *message);
 
+int serv_sock;
+int clnt_sock;
+
+void handle_sigint() {
+  close(serv_sock);
+  close(clnt_sock);
+  printf("Server Terminated\n");
+}
 
 void *server_thread(void *sock){
 	int buffer_size = 1024;
@@ -185,16 +192,12 @@ void error_handling(char *message)
 
 int main(int argc, char *argv[])
 {
-	int serv_sock;
-	int clnt_sock;
 	int str_len;
 	char buffer[1024];
 	char buf[256];
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in clnt_addr;
 	socklen_t clnt_addr_size;
-
-	strcpy(message, "hello world!");
 
 	if (argc != 2)
 	{
@@ -203,7 +206,7 @@ int main(int argc, char *argv[])
 	}
 
 	//init socks
-	serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+	serv_sock = socket(PF_INET,SOCK_STREAM, 0);
 	if (serv_sock == -1)
 	{
 		error_handling("socket() error");
@@ -227,7 +230,7 @@ int main(int argc, char *argv[])
 	}
 	clnt_addr_size = sizeof(clnt_addr);
 
-	
+	signal(SIGINT, handle_sigint);
 	while(1){
 		//accept
 		clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);

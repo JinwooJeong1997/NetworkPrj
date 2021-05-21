@@ -18,44 +18,6 @@ extern int errno;
 
 #define MAX_CMD 100
 
-void sendFile(char *name, int socks);
-void error_handling(char *message);
-
-void sendFile(char *name, int socks){
-	size_t fsize, nsize = 0;
-	size_t fsize2;
-	char *fname = (char *)malloc(strlen(name));
-	strncpy(fname, name, sizeof(name));
-	char buf[BUFSIZ];
-	FILE *file = NULL;
-	/* 전송할 파일 이름을 작성합니다 */
-	file = fopen(fname, "rb");
-	if (file == NULL){
-
-		error_handling("fopenfail!");
-		exit(1);
-	}
-	printf("file open!\n");
-	/* 파일 크기 계산 */
-	// move file pointer to end
-	fseek(file, 0, SEEK_END);
-	// calculate file size
-	fsize = ftell(file);
-	// move file pointer to first
-	fseek(file, 0, SEEK_SET);
-
-	// send file contents
-	while (nsize != fsize){
-		// read from file to buf
-		// 1byte * 256 count = 256byte => buf[256];
-		int fpsize = fread(buf, 1, 256, file);
-		nsize += fpsize;
-		printf("%d / %d \n", fpsize, nsize);
-		send(socks, buf, fpsize, 0);
-	}
-	free(fname);
-	fclose(file);
-}
 
 int cmdchk(const char *str, const char *pre){
 	size_t lenpre = strlen(pre);
@@ -73,13 +35,15 @@ void client_process(int sock, char *buffer){
 
 	// Process
 	if (cmdchk(command, "pull")){
+		printf("pull!\n");
 		client_pull(sock,buffer,context);
 	}
 	else if (cmdchk(command, "push")){
+		printf("push!\n");
 		client_push(sock,buffer,context);
 	}
 	else if(cmdchk(command,"ls")){
-
+		printf("ls\n");
 	}
 	else{
 		printf("No such command: %s\n", buffer);
@@ -242,17 +206,9 @@ int main(int argc, char *argv[]){
 	{
 		error_handling("connect() error!");
 	}
-	// test
-	str_len = read(sock, message, BUFSIZ - 1);
-
-	if (str_len == -1)
-	{
-		error_handling("read() error!");
-	}
-
 	while(1){
 		//read
-		fputs(stdout,">>");
+		printf("input >>");
 		fgets(buffer,1024,stdin);
 		if(!strcmp(buffer,"\n")){
 			continue;
@@ -263,11 +219,11 @@ int main(int argc, char *argv[]){
 		if(strcmp(buffer,"exit")== 0){
 			break;
 		}
+		printf("Message : %s \n", buffer);
+		char cmd[MAX_CMD];
+		client_process(sock,buffer);
 	}
-	printf("Message from server : %s \n", message);
-	char cmd[MAX_CMD];
-	client_process(sock,buffer);
-
+	
 	close(sock);
 	return 0;
 }
