@@ -245,6 +245,7 @@ int main(int argc, char *argv[])
 	int sock;
 	int str_len, len;
 	struct sockaddr_in serv_addr;
+	char buffer[1024];
 	char message[MAX_CMD];
 	if (argc != 3)
 	{
