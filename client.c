@@ -186,12 +186,6 @@ void client_pull(int sock, char *buffer, char *target_file)
 		fclose(fd);
 		return;
 	}
-	if (begin_with(response, "@"))
-	{
-		printf("Server Error: %s\n", &response[1]);
-		fclose(fd);
-		return;
-	}
 	long file_size = strtol(response, NULL, 0);
 
 	// Notify server to start transmission
