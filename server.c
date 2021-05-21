@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <pthread.h>
 
 #define DATA_SOCK 0
 #define MSG_SOCK 1
@@ -17,6 +18,9 @@
 char message[MAX_CMD];
 
 void error_handling(char *message);
+
+void *handle_clnt_msg(void *arg){};
+void *handle_clnt_dat(void *arg){};
 
 int main(int argc, char *argv[])
 {
@@ -40,12 +44,15 @@ int main(int argc, char *argv[])
 	{
 		//init socks
 		serv_sock[i] = socket(PF_INET, SOCK_STREAM, 0);
-		if (serv_sock[i] == -1){error_handling("socket() error");}
+		if (serv_sock[i] == -1)
+		{
+			error_handling("socket() error");
+		}
 		printf("socket[%d] socket() succeed \n ", i);
 		memset(&serv_addr[i], 0, sizeof(serv_addr[i]));
 		serv_addr[i].sin_family = AF_INET;
 		serv_addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
-		serv_addr[i].sin_port = htons(atoi(argv[1])+i);
+		serv_addr[i].sin_port = htons(atoi(argv[1]) + i);
 		printf("serv_addr[%d] port : %d", i, atoi(argv[1]));
 
 		if (bind(serv_sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
@@ -53,7 +60,10 @@ int main(int argc, char *argv[])
 			error_handling("bind() error");
 		}
 		printf("socket[%d] bind() succeed \n ", i);
+	}
 
+	for (int i = 0; i < 2; i++)
+	{
 		if (listen(serv_sock[i], 5) == -1)
 		{
 			error_handling("listen() error");
@@ -69,7 +79,6 @@ int main(int argc, char *argv[])
 		}
 		printf("socket[%d] accept() succeed \n ", i);
 	}
-
 
 	write(clnt_sock[MSG_SOCK], message, strlen(message) - 1);
 	int nbyte = 256;
@@ -100,7 +109,8 @@ int main(int argc, char *argv[])
 		message[str_len] = 0;
 		printf("Message from client MSG_SOCK: %s \n", message);
 	}
-	for(int i = 0; i < 2; i++){
+	for (int i = 0; i < 2; i++)
+	{
 		close(clnt_sock[i]);
 		close(serv_sock[i]);
 	}
