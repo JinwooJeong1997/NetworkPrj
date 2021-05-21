@@ -199,6 +199,7 @@ int main(int argc, char *argv[])
 	int serv_sock;
 	int clnt_sock;
 	int str_len;
+	char buffer[1024];
 	char buf[256];
 	struct sockaddr_in serv_addr;
 	struct sockaddr_in clnt_addr;
