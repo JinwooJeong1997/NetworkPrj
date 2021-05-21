@@ -57,11 +57,9 @@ int main(int argc, char *argv[])
 
 		printf("Message from server : %s \n", message);
 		char cmd[MAX_CMD];
-		fgets(cmd, MAX_CMD, stdin);
-		sendFile(cmd, sock);
-		printf("file send comp!\n");
-
-
+		//fgets(cmd, MAX_CMD, stdin);
+		//sendFile(cmd, sock);
+		//printf("file send comp!\n");
 	while (1)
 	{
 		fputs("input msg (q to Quit) : ", stdout);
