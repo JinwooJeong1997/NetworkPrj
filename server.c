@@ -25,13 +25,13 @@ void *handle_clnt_dat(void *arg){};
 
 int main(int argc, char *argv[])
 {
-	int serv_sock[2];
-	int clnt_sock[2];
+	int serv_sock;
+	int clnt_sock;
 	int str_len;
 	char buf[256];
-	struct sockaddr_in serv_addr[2];
-	struct sockaddr_in clnt_addr[2];
-	socklen_t clnt_addr_size[2];
+	struct sockaddr_in serv_addr;
+	struct sockaddr_in clnt_addr;
+	socklen_t clnt_addr_size;
 
 	strcpy(message, "hello world!");
 
@@ -41,78 +41,37 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	for (int i = 0; i < 2; i++)
-	{
 		//init socks
-		serv_sock[i] = socket(PF_INET, SOCK_STREAM, 0);
-		if (serv_sock[i] == -1)
+		serv_sock = socket(PF_INET, SOCK_STREAM, 0);
+		if (serv_sock == -1)
 		{
 			error_handling("socket() error");
 		}
 		printf("socket[%d] socket() succeed \n ", i);
-		memset(&serv_addr[i], 0, sizeof(serv_addr[i]));
-		serv_addr[i].sin_family = AF_INET;
-		serv_addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
-		serv_addr[i].sin_port = htons(atoi(argv[1]) + i);
-		printf("serv_addr[%d] port : %d \n", i, ntohs(serv_addr[i].sin_port));
+		memset(&serv_addr, 0, sizeof(serv_addr));
+		serv_addr.sin_family = AF_INET;
+		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+		serv_addr.sin_port = htons(atoi(argv[1]));
+		printf("serv_addr port : %d \n", ntohs(serv_addr.sin_port));
 
-
-		if (bind(serv_sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
+		if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
 		{
 			error_handling("bind() error");
 		}
-		printf("socket[%d] bind() succeed \n ",i);
+		if (listen(serv_sock, 5) == -1)
+		{
+			error_handling("listen() error");
+		}
+
+		clnt_addr_size = sizeof(clnt_addr);
+		clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
+		if (clnt_sock == -1)
+		{
+			error_handling("accept() error");
+		}
 	}
 
-	if (listen(serv_sock[0], 5) == -1)
-		{
-			error_handling("listen() error");
-		}
-		printf("socket[1] listen() succeed \n ");
-
-		clnt_addr_size[0] = sizeof(clnt_addr[0]);
-		clnt_sock[0] = accept(serv_sock[0], (struct sockaddr *)&clnt_addr[0], &clnt_addr_size[0]);
-		if (clnt_sock[0] == -1)
-		{
-			printf("%d \n ", 0);
-			error_handling("accept() error");
-		}
-	printf("socket0 accept() succeed \n ");
-
-	if (listen(serv_sock[1], 5) == -1)
-		{
-			error_handling("listen() error");
-		}
-		printf("socket[%d] listen() succeed \n ", 1);
-
-		clnt_addr_size[1] = sizeof(clnt_addr[1]);
-		clnt_sock[1] = accept(serv_sock[1], (struct sockaddr *)&clnt_addr[1], &clnt_addr_size[1]);
-		if (clnt_sock[1] == -1)
-		{
-			printf("%d \n ", 1);
-			error_handling("accept() error");
-		}
-	printf("socket1 accept() succeed \n ");
-	
-	/*for (int i = 0; i < 2; i++)
-	{
-		if (listen(serv_sock[i], 5) == -1)
-		{
-			error_handling("listen() error");
-		}
-		printf("socket[%d] listen() succeed \n ", i);
-
-		clnt_addr_size[i] = sizeof(clnt_addr[i]);
-		clnt_sock[i] = accept(serv_sock[i], (struct sockaddr *)&clnt_addr[i], &clnt_addr_size[i]);
-		if (clnt_sock[i] == -1)
-		{
-			printf("%d \n ", i);
-			error_handling("accept() error");
-		}
-		printf("socket[%d] accept() succeed \n ", i);
-	}*/
-
-	write(clnt_sock[MSG_SOCK], message, strlen(message) - 1);
+	write(clnt_sock, message, strlen(message) - 1);
 	int nbyte = 256;
 	size_t filesize = 0, bufsize = 0;
 	FILE *file = NULL;
@@ -120,32 +79,29 @@ int main(int argc, char *argv[])
 	bufsize = 256;
 	while (nbyte != 0)
 	{
-		nbyte = recv(clnt_sock[DATA_SOCK], buf, bufsize, 0);
+		nbyte = recv(clnt_sock, buf, bufsize, 0);
 		fwrite(buf, sizeof(char), nbyte, file);
 	}
 	fclose(file);
 	printf("file update complete!\n");
 	while (1)
 	{
-		str_len = read(clnt_sock[MSG_SOCK], message, BUFSIZ - 1);
+		str_len = read(clnt_sock, message, BUFSIZ - 1);
 		if (str_len == -1)
 		{
 			error_handling("read() error!");
 		}
 		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
 		{
-			close(clnt_sock[MSG_SOCK]);
+			close(clnt_sock);
 			break;
 		}
-		write(clnt_sock[MSG_SOCK], message, strlen(message));
+		write(clnt_sock, message, strlen(message));
 		message[str_len] = 0;
 		printf("Message from client MSG_SOCK: %s \n", message);
 	}
-	for (int i = 0; i < 2; i++)
-	{
-		close(clnt_sock[i]);
-		close(serv_sock[i]);
-	}
+	close(clnt_sock);
+	close(serv_sock);
 	return 0;
 }
 

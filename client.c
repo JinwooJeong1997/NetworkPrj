@@ -22,10 +22,10 @@ void sendFile(char *name, int socks);
 void error_handling(char *message);
 int main(int argc, char *argv[])
 {
-	int sock[2];
+	int sock;
 	//int clnt_sock[2];
 	int str_len, len;
-	struct sockaddr_in serv_addr[2];
+	struct sockaddr_in serv_addr;
 	char message[MAX_CMD];
 	if (argc != 3)
 	{
@@ -33,39 +33,33 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	for (int i = 0; i < 2; i++)
-	{
-		sock[i] = socket(PF_INET, SOCK_STREAM, 0);
-		if (sock[i] == -1)
+
+		sock = socket(PF_INET, SOCK_STREAM, 0);
+		if (sock == -1)
 		{
 			error_handling("socket() error");
 		}
-		memset(&serv_addr[i], 0, sizeof(serv_addr[i]));
-		serv_addr[i].sin_family = AF_INET;
-		serv_addr[i].sin_addr.s_addr = inet_addr(argv[1]);
-		serv_addr[i].sin_port = htons(atoi(argv[2])+i);
-		printf("serv_addr port : %d \n", ntohs(serv_addr[i].sin_port));
-	}
-
-	for(int i = 0; i < 2; i++){
-		if (connect(sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
+		memset(&serv_addr, 0, sizeof(serv_addr));
+		serv_addr.sin_family = AF_INET;
+		serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
+		serv_addr.sin_port = htons(atoi(argv[2]));
+		printf("serv_addr port : %d \n", ntohs(serv_addr.sin_port));
+		if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
 		{
-			printf("%d socket ",i);
 			error_handling("connect() error!");
 		}
-	}
 	// test
-		str_len = read(sock[MSG_SOCK], message, BUFSIZ - 1);
+		str_len = read(sock, message, BUFSIZ - 1);
 
 		if (str_len == -1)
 		{
 			error_handling("read() error!");
 		}
 
-		printf("Message from server MSG_SOCK: %s \n", message);
+		printf("Message from server : %s \n", message);
 		char cmd[MAX_CMD];
 		fgets(cmd, MAX_CMD, stdin);
-		sendFile(cmd, sock[DATA_SOCK]);
+		sendFile(cmd, sock);
 		printf("file send comp!\n");
 
 
@@ -84,7 +78,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < 2; i++)
 	{
-		close(sock[i]);
+		close(sock);
 	}
 	return 0;
 }
