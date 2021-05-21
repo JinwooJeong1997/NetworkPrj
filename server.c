@@ -61,14 +61,14 @@ int main(int argc, char *argv[])
 		{
 			error_handling("bind() error");
 		}
-		printf("socket[%d] bind() succeed \n ", i);
+		printf("socket[%d] bind() succeed \n ",i);
 	}
 
 	if (listen(serv_sock[0], 5) == -1)
 		{
 			error_handling("listen() error");
 		}
-		printf("socket[%d] listen() succeed \n ", i);
+		printf("socket[1] listen() succeed \n ");
 
 		clnt_addr_size[0] = sizeof(clnt_addr[i]);
 		clnt_sock[0] = accept(serv_sock[i], (struct sockaddr *)&clnt_addr[i], &clnt_addr_size[i]);
