@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 		serv_addr[i].sin_addr.s_addr = htonl(INADDR_ANY);
 		serv_addr[i].sin_port = htons(atoi(argv[1]) + i);
 		printf("serv_addr[%d] port : %d \n", i, ntohs(serv_addr[i].sin_port));
-		
+
 
 		if (bind(serv_sock[i], (struct sockaddr *)&serv_addr[i], sizeof(serv_addr[i])) == -1)
 		{
@@ -64,7 +64,36 @@ int main(int argc, char *argv[])
 		printf("socket[%d] bind() succeed \n ", i);
 	}
 
-	for (int i = 0; i < 2; i++)
+	if (listen(serv_sock[0], 5) == -1)
+		{
+			error_handling("listen() error");
+		}
+		printf("socket[%d] listen() succeed \n ", i);
+
+		clnt_addr_size[0] = sizeof(clnt_addr[i]);
+		clnt_sock[0] = accept(serv_sock[i], (struct sockaddr *)&clnt_addr[i], &clnt_addr_size[i]);
+		if (clnt_sock[0] == -1)
+		{
+			printf("%d \n ", 0);
+			error_handling("accept() error");
+		}
+	printf("socket0 accept() succeed \n ");
+
+	if (listen(serv_sock[1], 5) == -1)
+		{
+			error_handling("listen() error");
+		}
+		printf("socket[%d] listen() succeed \n ", i);
+
+		clnt_addr_size[1] = sizeof(clnt_addr[i]);
+		clnt_sock[1] = accept(serv_sock[i], (struct sockaddr *)&clnt_addr[i], &clnt_addr_size[i]);
+		if (clnt_sock[1] == -1)
+		{
+			printf("%d \n ", 1);
+			error_handling("accept() error");
+		}
+	printf("socket0 accept() succeed \n ");
+	/*for (int i = 0; i < 2; i++)
 	{
 		if (listen(serv_sock[i], 5) == -1)
 		{
@@ -80,7 +109,7 @@ int main(int argc, char *argv[])
 			error_handling("accept() error");
 		}
 		printf("socket[%d] accept() succeed \n ", i);
-	}
+	}*/
 
 	write(clnt_sock[MSG_SOCK], message, strlen(message) - 1);
 	int nbyte = 256;
