@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 		serv_addr[i].sin_family = AF_INET;
 		serv_addr[i].sin_addr.s_addr = inet_addr(argv[1]);
 		serv_addr[i].sin_port = htons(atoi(argv[2])+i);
-		printf("serv_addr port : %d \n", atoi(argv[2])+i);
+		printf("serv_addr port : %d \n", nstoh(serv_addr[i].sin_port));
 	}
 
 	for(int i = 0; i < 2; i++){
