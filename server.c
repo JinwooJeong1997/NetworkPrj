@@ -93,14 +93,14 @@ int main(int argc, char *argv[])
 		}
 		if (!strcmp(message, "q\n") || !strcmp(message, "Q\n"))
 		{
-			close(clnt_sock[MSG_SOCK])
+			close(clnt_sock[MSG_SOCK]);
 			break;
 		}
 		write(clnt_sock[MSG_SOCK], message, strlen(message));
 		message[str_len] = 0;
 		printf("Message from client MSG_SOCK: %s \n", message);
 	}
-	for(i = 0; i < 2; i++){
+	for(int i = 0; i < 2; i++){
 		close(clnt_sock[i]);
 		close(serv_sock[i]);
 	}
