@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
 	while (nbyte != 0)
 	{
 		nbyte = recv(clnt_sock, buf, bufsize, 0);
+		printf("%d byte \n", nbyte);
 		fwrite(buf, sizeof(char), nbyte, file);
 	}
 	fclose(file);
