@@ -9,6 +9,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
+#include <errno.h>
+
+extern int errno;
 
 #define DATA_SOCK 0
 #define MSG_SOCK 1
@@ -127,7 +130,8 @@ void sendFile(char *name, int socks)
 
 void error_handling(char *message)
 {
-	fputs(message, stderr);
-	fputc('\n', stderr);
+	perror(message);
+	//fputs(message, stderr);
+	//fputc('\n', stderr);
 	exit(1);
 }
