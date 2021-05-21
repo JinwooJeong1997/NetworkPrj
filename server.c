@@ -204,7 +204,6 @@ void server_push(int sock, char *target_file)
 	FILE *fd;
 	if ((fd = fopen(target_file, "wb")) == NULL)
 	{
-		respond(sock, "@file open error");
 		fprintf(stderr, "(%d) Can't open %s", sock, target_file);
 		perror("");
 		return;
@@ -213,7 +212,7 @@ void server_push(int sock, char *target_file)
 	// Retrieve File Size
 	char buffer[1024];
 	strcpy(buffer, "size?");
-	ssize_t byte_sent = send(recfd, buffer, strlen(buffer) + 1, 0);
+	ssize_t byte_sent = send(sock, buffer, strlen(buffer) + 1, 0);
 	if (byte_sent == -1)
 	{
 		fprintf(stderr, "(%d) can't send packet", sock);
