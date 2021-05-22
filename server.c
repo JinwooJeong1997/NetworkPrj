@@ -20,13 +20,22 @@
 
 
 int serv_sock;
-int clnt_sock;
+void* clnt_sock;
 
 void handle_sigint() {
   close(serv_sock);
-  close(clnt_sock);
   printf("Server Terminated\n");
+  exit(1);
 }
+
+int sendMsg(int sock,char msg[]){
+	if((send(sock,msg,strlen(msg)+1,0))==-1){
+		fprintf(stderr,"(%d) can't packet\n",sock);
+		return errno;
+	}
+	return 0;
+}
+
 
 void *server_thread(void *sock){
 	int buffer_size = 1024;
@@ -34,8 +43,8 @@ void *server_thread(void *sock){
 	while (1){
 		//명령어 입력확인
 		if (recv((int)sock, buffer, buffer_size, 0) < 1){
-			fprintf(stderr, "%d Terminated", (int)sock);
-			perror("");
+			fprintf(stderr, "%d Terminated \n", (int)sock);
+			perror("recv() error");
 			close((int)sock);
 			break;
 		}
@@ -49,69 +58,56 @@ int cmdchk(const char *str, const char *pre){
 	return (lenstr < lenpre) ? 0 : memcmp(pre, str, lenpre) == 0;
 }
 
-void server_process(int sock, char *command){
-	char *blank = " ";
-	char *cmd = strtok(command, blank);
-	char *context = strtok(NULL, blank);
-	char *response = malloc(sizeof(char) * 1024);
-	printf("received msg from (%d) : %s",sock,command);
-	if (cmdchk(cmd, "pull")){
-		server_pull(sock,context);
-	}
-	else if (cmdchk(cmd, "push")){
-		server_push(sock,context);
-	}
-	else if (cmdchk(cmd, "list")){
-		//show lists
-	}
-	free(response);
-}
-
-void server_pull(int sock, char *target_file){
+int server_pull(int sock, char *target_file){
 	FILE *fd;
+	printf("server_pull - init\n");
 	if ((fd = fopen(target_file, "rb")) == NULL){
-		perror("");
-		return;
+		sendMsg(sock, "@file open error");
+		perror("fopen() error");
+		return -1;
 	}
 
 	char buffer[1024];
 	ssize_t chunk_size;
-
+	printf("server_pull - seek\n");
 	fseek(fd, 0L, SEEK_END);
 	sprintf(buffer, "%ld", ftell(fd));
 	ssize_t byte_sent = send(sock, buffer, strlen(buffer) + 1, 0);
 	if (byte_sent == -1){
 		fprintf(stderr, "(%d) : can't send packet", sock);
-		perror("");
+		error_handling("send() error");
 		fclose(fd);
-		return;
+		return -1;
 	}
 	fseek(fd, 0L, SEEK_SET);
-
+	printf("server_pull - wait\n");
 	// Wait for client to be ready
 	ssize_t byte_received = recv(sock, buffer, sizeof(buffer), 0);
 	if (byte_received == -1){
 		fprintf(stderr, "(%d) can't receive packet", sock);
-		perror("");
+		error_handling("recv() error");
 		fclose(fd);
-		return;
+		return -1;
 	}
-
+	printf("server_pull - trans\n");
 	// Start Transmission
 	while ((chunk_size = fread(buffer, 1, sizeof(buffer), fd)) > 0){
 		ssize_t byte_sent = send(sock, buffer, chunk_size, 0);
+		printf("%d %d\n",chunk_size,byte_received);
 		if (byte_sent == -1){
 			fprintf(stderr, "(%d) can't send packet", sock);
-			perror("");
+			error_handling("send() error");
 			fclose(fd);
-			return;
+			return -1;
 		}
 	}
+	printf("server_pull - end\n");
 	printf("(%d) Transmited: %s\n", sock, target_file);
 	fclose(fd);
+	return 0;
 }
 
-void server_push(int sock, char *target_file)
+int server_push(int sock, char *target_file)
 {
 	// Initialize File Descriptor
 	FILE *fd;
@@ -119,7 +115,7 @@ void server_push(int sock, char *target_file)
 	{
 		fprintf(stderr, "(%d) Can't open %s", sock, target_file);
 		perror("");
-		return;
+		return -1;
 	}
 
 	// Retrieve File Size
@@ -131,7 +127,7 @@ void server_push(int sock, char *target_file)
 		fprintf(stderr, "(%d) can't send packet", sock);
 		perror("");
 		fclose(fd);
-		return;
+		return -1;
 	}
 	ssize_t byte_received = recv(sock, buffer, sizeof(buffer), 0);
 	if (byte_received == -1)
@@ -139,7 +135,7 @@ void server_push(int sock, char *target_file)
 		fprintf(stderr, "(%d) can't receive packet", sock);
 		perror("");
 		fclose(fd);
-		return;
+		return -1;
 	}
 	long file_size = strtol(buffer, NULL, 0); //strol => coveert string to long int
 
@@ -151,7 +147,7 @@ void server_push(int sock, char *target_file)
 		fprintf(stderr, "(%d) can't send packet", sock);
 		perror("");
 		fclose(fd);
-		return;
+		return -1;
 	}
 
 	// Start Receiving
@@ -165,7 +161,7 @@ void server_push(int sock, char *target_file)
 			fprintf(stderr, "(%d) can't receive packet", sock);
 			perror("");
 			fclose(fd);
-			return;
+			return -1;
 		}
 		if (received_size + chunk_size > file_size)
 		{
@@ -180,13 +176,42 @@ void server_push(int sock, char *target_file)
 	}
 	fprintf(stderr, "(%d) Saved: %s\n", sock, target_file);
 	fclose(fd);
+	return 0;
 }
+
+int server_process(int sock, char *command){
+	char *blank = " ";
+	char *cmd = strtok(command, blank);
+	char *context = strtok(NULL, blank);
+	char *response = malloc(sizeof(char) * 1024);
+	int rs=0;
+	printf("received msg from (%d) : %s \n",sock,cmd);
+	if (cmdchk(cmd, "pull")){
+		rs=server_pull(sock,context);
+		sendMsg(sock,response);
+	}
+	else if (cmdchk(cmd, "push")){
+		rs=server_push(sock,context);
+		sendMsg(sock,response);
+	}
+	else if (cmdchk(cmd, "list")){
+		//show lists
+		sendMsg(sock,response);
+	}
+	else{
+		strcpy(response,"No such command:");
+		strcat(response,command);
+		sendMsg(sock,response);
+	}
+	free(response);
+	return rs;
+}
+
+
 
 void error_handling(char *message)
 {
 	perror(message);
-	//fputs(message, stderr);
-	//fputc('\n', stderr);
 	exit(1);
 }
 
@@ -225,7 +250,7 @@ int main(int argc, char *argv[])
 	if (listen(serv_sock, 5) == -1)
 	{
 		error_handling("listen() error");
-		close(clnt_sock);
+		close((int)clnt_sock);
 		exit(errno);
 	}
 	clnt_addr_size = sizeof(clnt_addr);
@@ -234,17 +259,18 @@ int main(int argc, char *argv[])
 	while(1){
 		//accept
 		clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
-		if (clnt_sock == -1){
-			error_handling("accept() error");
+		if ((int)clnt_sock == -1){
+			perror("accept() error");
 			continue;
 		}
-		printf("(%d) Accepted \n",clnt_sock);
+		
+		printf("(%d) Accepted \n",(int)clnt_sock);
 		pthread_t thread;
 		if (pthread_create(&thread, NULL, server_thread,clnt_sock)){
-			printf("(%d) Create thread error\n",clnt_sock);
+			printf("(%d) Create thread error\n",(int)clnt_sock);
 		}
 	}
-	close(clnt_sock);
+	close((int)clnt_sock);
 	close(serv_sock);
 	return 0;
 }
