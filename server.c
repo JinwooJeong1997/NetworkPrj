@@ -36,6 +36,7 @@ int sendMsg(int sock,char msg[]){
 	return 0;
 }
 
+
 //서버 쓰레드
 void *server_thread(void *sock){
 	int buffer_size = 1024;
@@ -48,6 +49,7 @@ void *server_thread(void *sock){
 			close((int)sock);
 			break;
 		}
+
 		//서버 동작 구현
 		server_process((int)sock, buffer);
 	}
@@ -132,7 +134,6 @@ int server_push(int sock, char *target_file)
 		return -1;
 	}
 	long file_size = strtol(buffer, NULL, 0); 
-
 	strcpy(buffer, "ready");
 	byte_sent = send(sock, buffer, strlen(buffer) + 1, 0);
 	if (byte_sent == -1)
@@ -142,7 +143,6 @@ int server_push(int sock, char *target_file)
 		fclose(fd);
 		return -1;
 	}
-
 	ssize_t chunk_size;
 	long received_size = 0;
 	while (received_size < file_size &&
@@ -234,7 +234,6 @@ int main(int argc, char *argv[])
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(atoi(argv[1]));
 	printf("serv_addr port : %d \n", ntohs(serv_addr.sin_port));
-
 	if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
 	{
 		error_handling("bind() error");
@@ -248,9 +247,9 @@ int main(int argc, char *argv[])
 	}
 	clnt_addr_size = sizeof(clnt_addr);
 
+
 	//ctrl+c 시 종료되도록 설정
 	signal(SIGINT, handle_sigint);
-
 	while(1){
 		clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
 		if ((int)clnt_sock == -1){

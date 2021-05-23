@@ -50,7 +50,6 @@ int client_process(int sock, char *buffer){
 	char *context = strtok(NULL, blank);
 	int rs = -1;
 
-
 	// Process
 	if (cmdchk(command, "pull")){
 		rs = client_pull(sock,buffer,context);
@@ -116,7 +115,6 @@ int client_pull(int sock, char *buffer, char *target_file){
 		fclose(fd);
 		return-1;
 	}
-
 	// Start Receiving
 	while (received_size < file_size &&(chunk_size = recv(sock, response, sizeof(response), 0)) > 0){
 		if (received_size + chunk_size > file_size){
@@ -128,7 +126,6 @@ int client_pull(int sock, char *buffer, char *target_file){
 			received_size += chunk_size;
 		}
 	}
-
 	// Clean Up
 	printf("%s Downloaded\n", target_file);
 	fclose(fd);
@@ -152,8 +149,6 @@ int client_push(int sock, char *buffer, char *target_file){
 		return -1;
 	}
 	ssize_t chunk_size;
-
-	//  서버 응답 체크
 	char response[1024];
 	if (recv(sock, response, sizeof(response), 0) == -1)
 	{
@@ -162,7 +157,6 @@ int client_push(int sock, char *buffer, char *target_file){
 		fclose(fd);
 		return -1;
 	}
-	//에러 발생 확인
 	if(cmdchk(response,"@")){
 		printf("Server Error: %s\n",&response[1]);
 		fclose(fd);
@@ -187,7 +181,6 @@ int client_push(int sock, char *buffer, char *target_file){
 		fclose(fd);
 		return -1;
 	}
-
 	// Start Transmission
 	while ((chunk_size = fread(buffer, 1, sizeof(buffer), fd)) > 0)
 	{
@@ -211,12 +204,10 @@ int client_vim(int sock,char *buffer,char *target_file){
 	int status;
 	char *cmd = malloc(sizeof(char) * 1024);
 
-
 	strcpy(buffer,"pull ");
 	strcat(buffer,target_file);
 	strcat(buffer,"\0");
 	printf("VIM BEFORE :%s\n",buffer);
-
 	if(client_process(sock,buffer)==-1){
 		printf("%s not exist at server \n",target_file);
 	}
@@ -231,6 +222,7 @@ int client_vim(int sock,char *buffer,char *target_file){
 	strcpy(buffer,"push ");
 	strcat(buffer,target_file);
 	strcat(buffer,"\0");
+
 	client_process(sock,buffer);
 
 	free(cmd);
@@ -241,7 +233,6 @@ int client_vim(int sock,char *buffer,char *target_file){
 
 void error_handling(char *message){
 	perror(message);
-	exit(1);
 }
 
 int main(int argc, char *argv[]){
@@ -260,7 +251,7 @@ int main(int argc, char *argv[]){
 	{
 		error_handling("socket() error");
 	}
-
+  
 	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
@@ -272,7 +263,6 @@ int main(int argc, char *argv[]){
 		close(sock);
 		exit(errno);
 	}
-
 
 	while(1){
 		//read
@@ -291,6 +281,7 @@ int main(int argc, char *argv[]){
 		printf("Message : %s \n", buffer);
 		client_process(sock,buffer);
 	}
+
 	close(sock);
 	return 0;
 }
