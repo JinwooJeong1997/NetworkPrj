@@ -17,7 +17,7 @@
 
 #define BACKLOG 5
 #define MAX_CMD 100
-
+#define MAX_CLNT 20
 
 int serv_sock;
 void* clnt_sock;
@@ -36,7 +36,7 @@ int sendMsg(int sock,char msg[]){
 	return 0;
 }
 
-
+//서버 쓰레드
 void *server_thread(void *sock){
 	int buffer_size = 1024;
 	char *buffer = malloc(sizeof(char) * buffer_size);
@@ -48,6 +48,7 @@ void *server_thread(void *sock){
 			close((int)sock);
 			break;
 		}
+		//서버 동작 구현
 		server_process((int)sock, buffer);
 	}
 }
@@ -60,7 +61,6 @@ int cmdchk(const char *str, const char *pre){
 
 int server_pull(int sock, char *target_file){
 	FILE *fd;
-	printf("server_pull - init\n");
 	if ((fd = fopen(target_file, "rb")) == NULL){
 		sendMsg(sock, "@file open error");
 		perror("fopen() error");
@@ -69,7 +69,6 @@ int server_pull(int sock, char *target_file){
 
 	char buffer[1024];
 	ssize_t chunk_size;
-	printf("server_pull - seek\n");
 	fseek(fd, 0L, SEEK_END);
 	sprintf(buffer, "%ld", ftell(fd));
 	ssize_t byte_sent = send(sock, buffer, strlen(buffer) + 1, 0);
@@ -80,7 +79,6 @@ int server_pull(int sock, char *target_file){
 		return -1;
 	}
 	fseek(fd, 0L, SEEK_SET);
-	printf("server_pull - wait\n");
 	// Wait for client to be ready
 	ssize_t byte_received = recv(sock, buffer, sizeof(buffer), 0);
 	if (byte_received == -1){
@@ -89,7 +87,6 @@ int server_pull(int sock, char *target_file){
 		fclose(fd);
 		return -1;
 	}
-	printf("server_pull - trans\n");
 	// Start Transmission
 	while ((chunk_size = fread(buffer, 1, sizeof(buffer), fd)) > 0){
 		ssize_t byte_sent = send(sock, buffer, chunk_size, 0);
@@ -101,7 +98,6 @@ int server_pull(int sock, char *target_file){
 			return -1;
 		}
 	}
-	printf("server_pull - end\n");
 	printf("(%d) Transmited: %s\n", sock, target_file);
 	fclose(fd);
 	return 0;
@@ -109,7 +105,6 @@ int server_pull(int sock, char *target_file){
 
 int server_push(int sock, char *target_file)
 {
-	// Initialize File Descriptor
 	FILE *fd;
 	if ((fd = fopen(target_file, "wb")) == NULL)
 	{
@@ -118,7 +113,6 @@ int server_push(int sock, char *target_file)
 		return -1;
 	}
 
-	// Retrieve File Size
 	char buffer[1024];
 	strcpy(buffer, "size?");
 	ssize_t byte_sent = send(sock, buffer, strlen(buffer) + 1, 0);
@@ -137,9 +131,8 @@ int server_push(int sock, char *target_file)
 		fclose(fd);
 		return -1;
 	}
-	long file_size = strtol(buffer, NULL, 0); //strol => coveert string to long int
+	long file_size = strtol(buffer, NULL, 0); 
 
-	// Notify client to start transmission
 	strcpy(buffer, "ready");
 	byte_sent = send(sock, buffer, strlen(buffer) + 1, 0);
 	if (byte_sent == -1)
@@ -150,7 +143,6 @@ int server_push(int sock, char *target_file)
 		return -1;
 	}
 
-	// Start Receiving
 	ssize_t chunk_size;
 	long received_size = 0;
 	while (received_size < file_size &&
@@ -179,6 +171,8 @@ int server_push(int sock, char *target_file)
 	return 0;
 }
 
+//서버의 주동작
+//command를 받아 각 기능별 알맞는 처리를 함.
 int server_process(int sock, char *command){
 	char *blank = " ";
 	char *cmd = strtok(command, blank);
@@ -230,7 +224,6 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-	//init socks
 	serv_sock = socket(PF_INET,SOCK_STREAM, 0);
 	if (serv_sock == -1)
 	{
@@ -241,13 +234,13 @@ int main(int argc, char *argv[])
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(atoi(argv[1]));
 	printf("serv_addr port : %d \n", ntohs(serv_addr.sin_port));
-	//bind
+
 	if (bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
 	{
 		error_handling("bind() error");
 	}
-	//listen
-	if (listen(serv_sock, 5) == -1)
+
+	if (listen(serv_sock, MAX_CLNT) == -1)
 	{
 		error_handling("listen() error");
 		close((int)clnt_sock);
@@ -255,9 +248,10 @@ int main(int argc, char *argv[])
 	}
 	clnt_addr_size = sizeof(clnt_addr);
 
+	//ctrl+c 시 종료되도록 설정
 	signal(SIGINT, handle_sigint);
+
 	while(1){
-		//accept
 		clnt_sock = accept(serv_sock, (struct sockaddr *)&clnt_addr, &clnt_addr_size);
 		if ((int)clnt_sock == -1){
 			perror("accept() error");
