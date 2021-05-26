@@ -18,21 +18,18 @@ extern int errno;
 #define MSG_SOCK 1
 
 #define MAX_CMD 100
-<<<<<<< HEAD
-
-
-
-=======
->>>>>>> test1
+ 
 
 void error_handling(char *message);
 int client_pull(int sock, char *buffer, char *target_file);
 int client_push(int sock, char *buffer, char *target_file);
+int client_ls(int sock,char *buffer);
 int client_process(int sock, char *buffer);
 int cmdchk(const char *str, const char *pre);
 int sendMsg(int sock,char msg[]);
 
 int sendMsg(int sock,char msg[]){
+	printf("send() from sendMsg(%s)\n",msg);
 	if((send(sock,msg,strlen(msg)+1,0))==-1){
 		fprintf(stderr,"(%d) can't packet\n",sock);
 		return errno;
@@ -40,55 +37,33 @@ int sendMsg(int sock,char msg[]){
 	return 0;
 }
 
-
+//명령어 체크
 int cmdchk(const char *str, const char *pre){
 	size_t lenpre = strlen(pre);
 	size_t lenstr = strlen(str);
 	return (lenstr < lenpre) ? 0 : memcmp(pre, str, lenpre) == 0;
 }
 
-<<<<<<< HEAD
-//client process
-int client_process(int sock, char *buffer){
-	// Prepare
-=======
 //클라이언트 동작이 동작하는 곳
 int client_process(int sock, char *buffer){
->>>>>>> test1
 	char *full_command = malloc(strlen(buffer) + 1);
 	strcpy(full_command, buffer);
 	char *blank = " ";
 	char *command = strtok(full_command, blank);
 	char *context = strtok(NULL, blank);
 	int rs = -1;
-<<<<<<< HEAD
-	printf("INPUT : %s\n", buffer);
-	printf("command %s(%d)\ncontent %s(%d) \n",command,strlen(command),context,strlen(context));
+
+	printf("cmd : (%s) \n",command);
+
 	// Process
 	if (cmdchk(command, "pull")){
-		printf("pull!\n");
 		rs = client_pull(sock,buffer,context);
 	}
-	else if (cmdchk(command, "push")){
-		printf("push!\n");
+	else if(cmdchk(command, "push")){
 		rs = client_push(sock,buffer,context);
 	}
 	else if(cmdchk(command,"ls")){
-		printf("ls\n");
-=======
-
-
-	// Process
-	if (cmdchk(command, "pull")){
-		rs = client_pull(sock,buffer,context);
-	}
-	else if (cmdchk(command, "push")){
-		rs = client_push(sock,buffer,context);
-	}
-	else if(cmdchk(command,"ls"))
-	{
-		//추가 할곳.
->>>>>>> test1
+		rs = client_ls(sock,buffer);
 	}
 	else if(cmdchk(command,"vim")){
 		rs = client_vim(sock,buffer,context);
@@ -102,12 +77,9 @@ int client_process(int sock, char *buffer){
 	return rs;
 }
 
+//서버에서 다운로드
 int client_pull(int sock, char *buffer, char *target_file){
 	FILE *fd = fopen(target_file, "wb");
-<<<<<<< HEAD
-	printf("client_pull-fp! \n");
-=======
->>>>>>> test1
 	if (fd == NULL){
 		fprintf(stderr, "can't create file");
 		perror("");
@@ -115,10 +87,6 @@ int client_pull(int sock, char *buffer, char *target_file){
 	}
 	ssize_t chunk_size;
 	long received_size = 0;
-<<<<<<< HEAD
-	printf("client_pull-pull cmd! \n");
-=======
->>>>>>> test1
 	//send Pull command
 	if (send(sock, buffer, strlen(buffer) + 1, 0) == -1){
 		fprintf(stderr, "can't send packet");
@@ -127,10 +95,7 @@ int client_pull(int sock, char *buffer, char *target_file){
 		fclose(fd);
 		return -1;
 	}
-<<<<<<< HEAD
-	printf("client_pull-pull retrieve! \n");
-=======
->>>>>>> test1
+
 	// Retrieve File Size
 	char response[1024];
 	if (recv(sock, response, sizeof(response), 0) == -1){
@@ -141,18 +106,21 @@ int client_pull(int sock, char *buffer, char *target_file){
 		return -1;
 	}
 	if(cmdchk(response,"@")){
-		printf("Server Error: %s\n",&response[1]);
+		printf("%s : 서버에러 발생\n",&response[1]);
 		unlink(target_file);
 		fclose(fd);
 		return -1;
 	}
+	if(cmdchk(response,"!")){
+		printf("%s 은(는) 다른 누군가 사용중입니다.\n",&response[1]);
+		unlink(target_file);
+		fclose(fd);
+		return -2;
+	}
 	long file_size = strtol(response, NULL, 0);
-<<<<<<< HEAD
-	printf("client_pull-pull notify! \n");
-=======
->>>>>>> test1
 	// Notify server to start transmission
 	strcpy(buffer, "ready");
+	printf("send() from client_pull(%s)_2 \n",buffer);
 	if (send(sock, buffer, strlen(buffer) + 1, 0) == -1){
 		fprintf(stderr, "can't send packet");
 		perror("");
@@ -160,11 +128,6 @@ int client_pull(int sock, char *buffer, char *target_file){
 		fclose(fd);
 		return-1;
 	}
-<<<<<<< HEAD
-	printf("client_pull-receving! \n");
-=======
-
->>>>>>> test1
 	// Start Receiving
 	while (received_size < file_size &&(chunk_size = recv(sock, response, sizeof(response), 0)) > 0){
 		if (received_size + chunk_size > file_size){
@@ -176,30 +139,20 @@ int client_pull(int sock, char *buffer, char *target_file){
 			received_size += chunk_size;
 		}
 	}
-<<<<<<< HEAD
-	printf("client_pull-cleanup!! \n");
-=======
-
->>>>>>> test1
-	// Clean Up
-	printf("%s Downloaded\n", target_file);
+	printf("%s 을(를) 다운로드하였습니다.\n", target_file);
 	fclose(fd);
 	return 0;
 }
+
 int client_push(int sock, char *buffer, char *target_file){
-<<<<<<< HEAD
-	printf("push in\n");
-=======
->>>>>>> test1
-	// Send Upload Command
+	// push 명령 서버에 전달
 	if (send(sock, buffer, strlen(buffer) + 1, 0) == -1)
 	{
 		fprintf(stderr, "can't send packet");
 		perror("client_push_send():");
 		return -1;
 	}
-	printf("push init\n");	
-	// Initialize File Descriptor
+	//  FD 초기화
 	FILE *fd = fopen(target_file, "rb");
 	if (fd == NULL)
 	{
@@ -208,13 +161,8 @@ int client_push(int sock, char *buffer, char *target_file){
 		return -1;
 	}
 	ssize_t chunk_size;
-<<<<<<< HEAD
-	printf("push wait\n");
-	// Wait for server to be ready
-=======
 
 	//  서버 응답 체크
->>>>>>> test1
 	char response[1024];
 	if (recv(sock, response, sizeof(response), 0) == -1)
 	{
@@ -223,19 +171,14 @@ int client_push(int sock, char *buffer, char *target_file){
 		fclose(fd);
 		return -1;
 	}
-<<<<<<< HEAD
-=======
 	//에러 발생 확인
->>>>>>> test1
 	if(cmdchk(response,"@")){
 		printf("Server Error: %s\n",&response[1]);
 		fclose(fd);
 		return -1;
 	}
-<<<<<<< HEAD
-	printf("push notifiy\n");
-=======
->>>>>>> test1
+	
+
 	// Notify File Size
 	fseek(fd, 0L, SEEK_END);
 	sprintf(buffer, "%ld", ftell(fd));
@@ -247,10 +190,6 @@ int client_push(int sock, char *buffer, char *target_file){
 		return -1;
 	}
 	fseek(fd, 0L, SEEK_SET);
-<<<<<<< HEAD
-	printf("push wait ready\n");
-=======
->>>>>>> test1
 	// Wait for server to be ready
 	if (recv(sock, response, sizeof(response), 0) == -1)
 	{
@@ -259,11 +198,6 @@ int client_push(int sock, char *buffer, char *target_file){
 		fclose(fd);
 		return -1;
 	}
-<<<<<<< HEAD
-	printf("push trans!\n");
-=======
-
->>>>>>> test1
 	// Start Transmission
 	while ((chunk_size = fread(buffer, 1, sizeof(buffer), fd)) > 0)
 	{
@@ -276,73 +210,97 @@ int client_push(int sock, char *buffer, char *target_file){
 		}
 	}
 
-	// Clean Up
-	printf("%s Uploaded\n", target_file);
+	// 업로드 완료
+	printf("%s 을(를) 업로드 하였습니다.\n", target_file);
 	fclose(fd);
 	return 0;
 }
+
+//vim 기능
 int client_vim(int sock,char *buffer,char *target_file){
-	//check file exist in server
-<<<<<<< HEAD
-	printf("client_vim entered!\n");
-=======
->>>>>>> test1
-	pid_t pid = 0;
 	int status;
 	char *cmd = malloc(sizeof(char) * 1024);
 
-<<<<<<< HEAD
-=======
 
->>>>>>> test1
+	//pull 명령어 실행
+	memset(buffer,'\0',sizeof(buffer));
 	strcpy(buffer,"pull ");
 	strcat(buffer,target_file);
 	strcat(buffer,"\0");
-	printf("VIM BEFORE :%s\n",buffer);
-<<<<<<< HEAD
-	client_process(sock,buffer);
-	sleep(1);
-	//vi!
-=======
+	status = client_pull(sock,buffer,target_file);
 
-	if(client_process(sock,buffer)==-1){
-		printf("%s not exist at server \n",target_file);
+	if(status == -1){
+		printf("%s 은(는) 존재하지 않습니다. 새로 생성합니다.\n",target_file);
+	}else if(status == -2){	// lock 상태
+		printf("%s 은(는) 현재 사용중 입니다. 나중에 편집해주세요.\n",target_file);
+		return -1;
 	}
+
 
 	//파일 전송대기를 위한 sleep()함수
 	sleep(1);
 
->>>>>>> test1
 	strcpy(cmd,"vi ");
 	strcat(cmd,target_file);
 	system(cmd);
 	
-<<<<<<< HEAD
-	printf("exiting vim\n");
+	//errno 를 통해 에러 발생여부 확인
+	if(errno != 0){
+		printf("편집중 오류 발생\n");
+		printf("다시 시도해주세요!\n");
+		errno = 0;
+		return -1;
+	}
+	//입력 스트림 초기화
+	__fpurge(stdin);
+	
+	//push 명령어 실행
+	memset(buffer,'\0',sizeof(buffer));
 	strcpy(buffer,"push ");
 	strcat(buffer,target_file);
 	strcat(buffer,"\0");
-	printf("VIM AFTER :%s\n",buffer);
-=======
-	strcpy(buffer,"push ");
-	strcat(buffer,target_file);
-	strcat(buffer,"\0");
->>>>>>> test1
-	client_process(sock,buffer);
-
+	printf(" after vim buffer (%s) \n",buffer);
+	client_push(sock,buffer,target_file);
 	free(cmd);
 	unlink(target_file);
-	printf("vim opened!\n");
 	return 0;
 }
 
+int client_ls(int sock,char *buffer){
+	// 서버에 명령어 보냄
+	if (send(sock, buffer, sizeof(buffer), 0) < 0)
+	{
+		fprintf(stderr, "can't send packet");
+		perror("client_ls():");
+		return -1;
+	}
+
+	//서버 준비 확인
+	char response[1024];
+	if( recv(sock,response,sizeof(response),0) == -1){
+		fprintf(stderr,"server not ready");
+		return -1;
+	}
+	//서버준비확인 -> 오류 체크
+	if(cmdchk(response,"@")){
+		fprintf(stderr,"no files\n");
+		return -1;
+	}
+	int stat = 0;
+	while((stat=recv(sock,response,sizeof(response),0)) >  0){
+		if(cmdchk(response,"#")){
+			printf("End of File\n");
+			break;
+		}
+		response[strlen(response)+1] = "\n";
+		printf("=%s=\n",sizeof(response),response);
+		memset(response,'\0',sizeof(buffer));
+	}
+	return 0;
+}
+//에러 메시지 보내는 함수(프로그램 종료)
 void error_handling(char *message){
 	perror(message);
-<<<<<<< HEAD
-	//fputs(message, stderr);
-	//fputc('\n', stderr);
-=======
->>>>>>> test1
 	exit(1);
 }
 
@@ -351,37 +309,24 @@ int main(int argc, char *argv[]){
 	int str_len, len;
 	struct sockaddr_in serv_addr;
 	char buffer[1024];
-	if (argc != 3)
-	{
+	if (argc != 3){
 		printf("Usage : %s <IP> <PORT> \n", argv[0]);
 		exit(1);
 	}
-
 	sock = socket(PF_INET, SOCK_STREAM, 0);
-	if (sock == -1)
-	{
+	if (sock == -1){
 		error_handling("socket() error");
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> test1
 	memset(&serv_addr, 0, sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = inet_addr(argv[1]);
 	serv_addr.sin_port = htons(atoi(argv[2]));
 	printf("serv_addr port : %d \n", ntohs(serv_addr.sin_port));
-	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1)
-	{
+	if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) == -1){
 		perror("connect() error!");
 		close(sock);
 		exit(errno);
 	}
-<<<<<<< HEAD
-=======
-
-
->>>>>>> test1
 	while(1){
 		//read
 		printf(">>");
@@ -396,13 +341,9 @@ int main(int argc, char *argv[]){
 		if(strcmp(buffer,"exit")== 0){
 			break;
 		}
-		printf("Message : %s \n", buffer);
+		printf("Message : (%s) \n", buffer);
 		client_process(sock,buffer);
 	}
-<<<<<<< HEAD
-	
-=======
->>>>>>> test1
 	close(sock);
 	return 0;
 }
