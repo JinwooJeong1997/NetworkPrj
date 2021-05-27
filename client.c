@@ -14,11 +14,6 @@
 
 extern int errno;
 int sock;
-#define DATA_SOCK 0
-#define MSG_SOCK 1
-
-#define MAX_CMD 100
- 
 
 void handle_sigint() {
   close(sock);
@@ -350,6 +345,7 @@ int client_ls(int sock,char *buffer){
 	}
 	return 0;
 }
+
 //에러 메시지 보내는 함수(프로그램 종료)
 void error_handling(char *message){
 	perror(message);

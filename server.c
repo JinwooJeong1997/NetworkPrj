@@ -11,17 +11,13 @@
 #include <signal.h>
 #include <pthread.h>
 
-#define DATA_SOCK 0
-#define MSG_SOCK 1
-
-#define BACKLOG 5
-#define MAX_CMD 100
+//listen 수
 #define MAX_CLNT 20
+
+extern int errno;
 
 int serv_sock;
 void* clnt_sock;
-
-pthread_mutex_t mutex;
 
 //단일 연결리스트
 typedef struct flist{
@@ -32,7 +28,18 @@ typedef struct flist{
 
 fList * fileHead;
 
+//연결 리스트 관련 함수 정의
+fList* findList(char * target_file);
+void printList();
+void addList(char * name);
+void removeList(fList* target);
+void freeList(fList** head);
+int checkLock(char * target_file);
+int  lockList(char * target_file);
+void unlockList(char * target_file);
 
+
+// 서버 관련 함수 정의
 void *server_thread(void *sock);
 int cmdchk(const char *str, const char *pre);
 int request_pull(int sock, char *target_file);
@@ -40,6 +47,8 @@ int request_push(int sock, char *target_file);
 int request_ls(int sock);
 int request_rm(int sock, char * target_file);
 
+
+// 연결 리스트 함수 구현부
 fList* findList(char * target_file){
 	//check head is null.
 	if(fileHead->next == NULL){
@@ -154,6 +163,8 @@ void unlockList(char * target_file){
 	}
 }
 
+
+//시그널 함수
 void handle_sigint() {
   close(serv_sock);
   freeList(fileHead);
@@ -161,6 +172,7 @@ void handle_sigint() {
   exit(1);
 }
 
+// 에러 메시지를 클라이언트로 전송
 int sendMsg(int sock,char msg[]){
 	if((send(sock,msg,strlen(msg)+1,0))==-1){
 		fprintf(stderr,"(%d) can't packet\n",sock);
@@ -186,6 +198,7 @@ void *server_thread(void *sock){
 	}
 }
 
+//입력한 문자열내 명령어 체크
 int cmdchk(const char *str, const char *pre){
 	size_t lenpre = strlen(pre);
 	size_t lenstr = strlen(str);
@@ -396,11 +409,9 @@ int server_process(int sock, char *command){
 	printf("received msg from (%d) : %s \n",sock,cmd);
 	if (cmdchk(cmd, "pull")){
 		rs=request_pull(sock,context);
-		//sendMsg(sock,response);
 	}
 	else if (cmdchk(cmd, "push")){
 		rs=request_push(sock,context);
-		//sendMsg(sock,response);
 	}
 	else if (cmdchk(cmd, "ls")){
 		rs = request_ls(sock);
@@ -431,9 +442,6 @@ int main(int argc, char *argv[]){
 	socklen_t clnt_addr_size;
 
 	fileHead = malloc(sizeof(fList));
-	
-	pthread_mutex_init(&mutex,NULL);
-
 
 	if (argc != 2)
 	{
