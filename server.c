@@ -99,7 +99,6 @@ void removeList(fList* target){
 		if(ch == target && ch->lock == 0){
 			pre->next = ch->next;
 			free(ch);
-			ch = pre->next;
 			printf("삭제 성공\n");
 			return;
 		}else if(ch->lock != 0){

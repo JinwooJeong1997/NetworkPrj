@@ -128,13 +128,13 @@ int client_pull(int sock, char *buffer, char *target_file){
 		return -1;
 	}
 	if(cmdchk(response,"@")){
-		printf("%s : 서버에러 발생\n",&response[1]);
+		printf("서버에러 발생 : %s\n",&response[1]);
 		unlink(target_file);
 		fclose(fd);
 		return -1;
 	}
 	if(cmdchk(response,"!")){
-		printf("%s 은(는) 다른 누군가 사용중입니다.\n",&response[1]);
+		printf("%s 은(는) 다른 누군가 사용중입니다.\n",target_file);
 		unlink(target_file);
 		fclose(fd);
 		return -2;
@@ -253,11 +253,11 @@ int client_rm(int sock, char *buffer,char *target_file){
 
 	//메시지 확인
 	if(cmdchk(response,"@")){	//file not exist;
-		printf("삭제 실패\n",target_file);
+		printf("%s 삭제 실패\n",target_file);
 		fprintf(stderr,"삭제에 실패하였습니다.n");
 		return -1;
 	}else if ( cmdchk(response,"!")){ // file is locked;
-		printf("%s가 사용중입니다.\n",target_file);
+		printf("%s 삭제 실패\n",target_file);
 		fprintf(stderr,"파일이 사용중입니다\n");
 		return -2;
 
