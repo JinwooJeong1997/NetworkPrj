@@ -1,5 +1,9 @@
 Network Programing
 
+
+유의사항
+1. server와 client는 같은 폴더에 있으면 정상작동하지 않습니다.
+
 사용법
 1. server [포트번호]
 
