@@ -340,7 +340,7 @@ int client_ls(int sock,char *buffer){
 			break;
 		}
 		response[strlen(response)+1] = "\n";
-		printf("=%s=\n",sizeof(response),response);
+		printf("=%s=\n",response);
 		memset(response,'\0',sizeof(buffer));
 	}
 	return 0;
